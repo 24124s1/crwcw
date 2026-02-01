@@ -1417,7 +1417,7 @@ function components.toggle(holder, options, zindex)
         	return library.config_objects[options.flag]
     	end
 
-    	return components.dropdown(holder, options, zindex + 2)
+    	return components.Dropdown(holder, options, zindex + 2)
 	end
 
     function toggle_types:Colorpicker(options)
@@ -4371,7 +4371,7 @@ function library:Window(options)
                 ZIndex = 78
             })
 
-            return components.dropdown(holder, options, 81)
+            return components.Dropdown(holder, options, 81)
         end
 
         function section_types:Keybind(options)
@@ -4976,7 +4976,7 @@ function library:Load(options)
                         ZIndex = 8
                     })
     
-                    return components.dropdown(holder, options)
+                    return components.Dropdown(holder, options)
                 end
 
                 function section_types:Keybind(options)
