@@ -3,8 +3,6 @@
 ]]
 
 repeat task.wait() until game:IsLoaded()
-
-print("1")
 -- Localization
 local fromRGB = Color3.fromRGB
 local newUDim2 = UDim2.new
