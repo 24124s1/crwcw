@@ -1973,7 +1973,9 @@ function components.dropdown(holder, options, zindex)
         CanvasSize = newUDim2(0, 0, 0, 0),
         ScrollBarThickness = 2,
         Theme = "Object Background",
-        ZIndex = zindex + 10
+        ZIndex = zindex + 10,
+        BorderSizePixel = 0,
+        BackgroundTransparency = 1
     })
 
     local content_holder = content_scroller:Create("Square", {
@@ -2010,6 +2012,47 @@ function components.dropdown(holder, options, zindex)
         end
     end
 
+    local set
+    set = function(chosen, ignore)
+        if not options.multi then
+            if chosen ~= current then
+                current = chosen
+                for name, option in next, option_objects do
+                    if name ~= chosen and option.chosen then
+                        option.chosen = false
+                        option.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
+                        library:ChangeThemeObject(option.text, "Disabled Text")
+                    end
+                end
+                update_value()
+                local option_object = option_objects[chosen]
+                if option_object then
+                    option_object.chosen = true
+                    option_object.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
+                    library:ChangeThemeObject(option_object.text, "Text")
+                    library.flags[options.flag] = chosen
+                    options.callback(chosen)
+                end
+            end
+        else
+            local idx = table.find(current, chosen)
+            if not idx then
+                table.insert(current, chosen)
+                option_objects[chosen].chosen = true
+                option_objects[chosen].object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
+                library:ChangeThemeObject(option_objects[chosen].text, "Text")
+            else
+                table.remove(current, idx)
+                option_objects[chosen].chosen = false
+                option_objects[chosen].object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
+                library:ChangeThemeObject(option_objects[chosen].text, "Disabled Text")
+            end
+            update_value()
+            library.flags[options.flag] = current
+            options.callback(current)
+        end
+    end
+
     local function create_option(name)
         local object = content_holder:Create("Square", {
             Size = newUDim2(1, 0, 0, 16),
@@ -2033,6 +2076,17 @@ function components.dropdown(holder, options, zindex)
             end
         end)
         option_objects[name] = {object = object, text = text, chosen = false}
+        
+        if not options.multi and current == name then
+            option_objects[name].chosen = true
+            option_objects[name].object.Transparency = 1
+            library:ChangeThemeObject(option_objects[name].text, "Text")
+        elseif options.multi and table.find(current, name) then
+            option_objects[name].chosen = true
+            option_objects[name].object.Transparency = 1
+            library:ChangeThemeObject(option_objects[name].text, "Text")
+        end
+
         content_scroller.CanvasSize = newUDim2(0, 0, 0, content_holder._list._contentSize + 6)
     end
 
@@ -2082,7 +2136,16 @@ function components.dropdown(holder, options, zindex)
         update_value()
     end
 
+    function dropdown_types:Set(val)
+        set(val)
+    end
+
     refresh_list()
+    update_value()
+    
+    holder.main.Size = newUDim2(1, 0, 0, 33)
+    holder.section:Resize()
+
     utility.format(dropdown_types, true)
     return dropdown_types
 end
