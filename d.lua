@@ -1936,6 +1936,8 @@ function components.Dropdown(holder, options, zindex)
         OutlineTheme = "Object Border"
     })
 
+    if not dropdown then return end
+
     if options.tooltip then
         components.tooltip(dropdown, options.tooltip)
     end
@@ -1990,12 +1992,16 @@ function components.Dropdown(holder, options, zindex)
         BackgroundTransparency = 1
     })
 
+    if not content_scroller then return end
+
     local content_holder = content_scroller:Create("Square", {
         Transparency = 0,
         Size = newUDim2(1, -6, 1, -6),
         Position = newUDim2(0, 3, 0, 3),
         Outline = false
     })
+
+    if not content_holder then return end
 
     content_holder:AddList(3)
 
@@ -2032,7 +2038,7 @@ function components.Dropdown(holder, options, zindex)
     end
 
     local set
-    set = function(chosen, ignore)
+    set = function(chosen)
         if not options.multi then
             if chosen ~= current then
                 current = chosen
