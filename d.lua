@@ -1908,7 +1908,6 @@ end
 
 function components.Dropdown(holder, options, zindex)
     zindex = zindex or 11
-
     utility.format(options)
     options.multi = options.multi or options.multiselect or options.multibox or options.multiple
 
@@ -1917,6 +1916,7 @@ function components.Dropdown(holder, options, zindex)
         content = {},
         multi = false,
         flag = utility.new_flag(),
+        default = nil,
         callback = function() end
     })
 
@@ -1925,7 +1925,7 @@ function components.Dropdown(holder, options, zindex)
     end
 
     local option_objects = {}
-    local current = options.multi and {} or nil
+    local current = options.default or (options.multi and {} or nil)
     local active_content = options.content
 
     local dropdown = holder.main:Create("Square", {
@@ -1999,9 +1999,16 @@ function components.Dropdown(holder, options, zindex)
 
     content_holder:AddList(3)
 
+    local dropdown_logic = {
+        content_frame = content_frame,
+        search_input = search_input,
+        value_text = value_text,
+        open_button = open_button
+    }
+
     local function update_value()
         if not options.multi then
-            value_text.Text = current or "NONE"
+            value_text.Text = tostring(current or "NONE")
             library:ChangeThemeObject(value_text, current and "Text" or "Disabled Text")
         else
             local current_text = {}
@@ -2042,9 +2049,9 @@ function components.Dropdown(holder, options, zindex)
                     option_object.chosen = true
                     option_object.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
                     library:ChangeThemeObject(option_object.text, "Text")
-                    library.flags[options.flag] = chosen
-                    options.callback(chosen)
                 end
+                library.flags[options.flag] = chosen
+                options.callback(chosen)
             end
         else
             local idx = table.find(current, chosen)
@@ -2084,7 +2091,7 @@ function components.Dropdown(holder, options, zindex)
         object.MouseButton1Click:Connect(function()
             set(name)
             if not options.multi then
-                close_dropdown()
+                close_dropdown(dropdown_logic)
             end
         end)
         option_objects[name] = {object = object, text = text, chosen = false}
@@ -2118,25 +2125,16 @@ function components.Dropdown(holder, options, zindex)
         refresh_list(search_input.Text)
     end)
 
-    function open_dropdown()
-        content_frame.Visible = true
-        search_input.Visible = true
-        value_text.Visible = false
-        open_button.Text = "-"
-        search_input:CaptureFocus()
-    end
-
-    function close_dropdown()
-        content_frame.Visible = false
-        search_input.Visible = false
-        value_text.Visible = true
-        open_button.Text = "+"
-        search_input.Text = ""
-        refresh_list()
-    end
-
     dropdown.MouseButton1Click:Connect(function()
-        if content_frame.Visible then close_dropdown() else open_dropdown() end
+        if content_frame.Visible then
+            close_dropdown(dropdown_logic)
+        else
+            content_frame.Visible = true
+            search_input.Visible = true
+            value_text.Visible = false
+            open_button.Text = "-"
+            search_input:CaptureFocus()
+        end
     end)
 
     local dropdown_types = {}
