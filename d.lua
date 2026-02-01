@@ -2179,41 +2179,14 @@ function components.dropdown(holder, options, zindex)
         end
     end
 
-    function dropdown_types:Refresh(tbl)
-        if not options.multi then
-            for _, option in next, option_objects do
-                option.object:Destroy()
-            end
-
-            clear(option_objects)
-
-            for _, option in next, tbl do
-                create_option(option)
-            end
-
-            current = nil
-            update_value()
-            
-            library.flags[options.flag] = nil
-            options.callback(nil)
-        else
-            for _, option in next, option_objects do
-                option.object:Destroy()
-            end
-
-            clear(option_objects)
-            clear(current)
-
-            for _, option in next, tbl do
-                create_option(option)
-            end
-
-            update_value()
-
-            library.flags[options.flag] = {}
-            options.callback{}
-        end
-    end
+	function dropdown_types:Refresh(tbl)
+		for _, name in next, tbl do
+			if option_objects[name] then
+				option_objects[name].text.Text = name
+			end
+		end
+		update_value()
+	end
 
     function dropdown_types:Exists(option)
         return option_objects[option] and true or false
