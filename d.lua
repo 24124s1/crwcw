@@ -1496,10 +1496,11 @@ function components.slider(holder, options, zindex)
     utility.format(options)
 
     utility.defaults(options, {
+        name = "Slider",
         default = options.min or 1,
         ignored = options.noconfig or options.ignoreconfig or options.configignore or false,
         float = 0.1,
-        suffix = "/" .. (options.min and utility.tostring(options.max) or "1"),
+        suffix = "",
         min = 0,
         max = 1,
         flag = utility.new_flag(),
@@ -1545,7 +1546,7 @@ function components.slider(holder, options, zindex)
         Position = newUDim2(0.5, 0, 0, -2),
         Theme = "Text",
         Center = true,
-        ZIndex = zindex + 2
+        ZIndex = zindex + 3
     })
 
     local plus = holder.main:Create("Text", {
@@ -1584,7 +1585,7 @@ function components.slider(holder, options, zindex)
 
     local function set(value)
         value = clamp(utility.round(tonumber(value), options.float), options.min, options.max)
-        value_text.Text = utility.tostring(value) .. options.suffix
+        value_text.Text = options.name .. ": " .. utility.tostring(value) .. options.suffix
 
         if value ~= current_value then
             current_value = value
