@@ -2179,15 +2179,42 @@ function components.dropdown(holder, options, zindex)
         end
     end
 
-	function dropdown_types:Refresh(tbl)
-		for _, name in next, tbl do
-			if option_objects[name] then
-				option_objects[name].text.Text = name
+	function dropdown_types:Refresh()
+		local current_flag = library.flags[options.flag]
+
+		if not options.multi then
+			current = current_flag
+		else
+			current = current_flag or {}
+		end
+
+		for name, option in next, option_objects do
+			if options.multi then
+				if find(current, name) then
+					option.chosen = true
+					option.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
+					library:ChangeThemeObject(option.text, "Text")
+				else
+					option.chosen = false
+					option.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
+					library:ChangeThemeObject(option.text, "Disabled Text")
+				end
+			else
+				if current == name then
+					option.chosen = true
+					option.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
+					library:ChangeThemeObject(option.text, "Text")
+				else
+					option.chosen = false
+					option.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
+					library:ChangeThemeObject(option.text, "Disabled Text")
+				end
 			end
 		end
+
 		update_value()
 	end
-
+	
     function dropdown_types:Exists(option)
         return option_objects[option] and true or false
     end
