@@ -1411,13 +1411,9 @@ function components.toggle(holder, options, zindex)
         return components.slider(holder, options, zindex + 2)
     end
 
-	function toggle_types:Dropdown(options)
-    	if options.flag and library.config_objects[options.flag] then
-        	return library.config_objects[options.flag]
-    	end
-
-    	return components.Dropdown(holder, options, zindex + 2)
-	end
+    function toggle_types:Dropdown(options)
+        return components.dropdown(holder, options, zindex + 2)
+    end
 
     function toggle_types:Colorpicker(options)
         return components.colorpicker(holder, options, zindex + 2)
