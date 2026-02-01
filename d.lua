@@ -5001,7 +5001,7 @@ function library:Load(options)
                         ZIndex = 8
                     })
     
-                    return components.Dropdown(holder, options)
+                    return components.dropdown(holder, options)
                 end
 
                 function section_types:Keybind(options)
