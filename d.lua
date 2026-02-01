@@ -1910,6 +1910,7 @@ function components.dropdown(holder, options, zindex)
     local current = options.multi and {} or nil
     local searching = false
     local current_search = ""
+    local scroll_offset = 0
 
     local dropdown = holder.main:Create("Square", {
         Size = newUDim2(1, 0, 0, 15),
@@ -1970,15 +1971,26 @@ function components.dropdown(holder, options, zindex)
         ZIndex = zindex + 11
     })
 
-    local scroll_holder = content_frame:Create("Square", {
-        Size = newUDim2(1, -6, 1, -22),
+    local scroll_area = content_frame:Create("Square", {
+        Size = newUDim2(1, -10, 1, -22),
         Position = newUDim2(0, 3, 0, 20),
         ZIndex = zindex + 10,
         Transparency = 0,
         Outline = false
     })
 
-    scroll_holder:AddList(0)
+    local scroll_bar_bg = content_frame:Create("Square", {
+        Size = newUDim2(0, 2, 1, -22),
+        Position = newUDim2(1, -4, 0, 20),
+        ZIndex = zindex + 10,
+        Theme = "Object Border"
+    })
+
+    local scroll_bar = scroll_bar_bg:Create("Square", {
+        Size = newUDim2(1, 0, 0, 20),
+        ZIndex = zindex + 11,
+        Theme = "Accent"
+    })
 
     local function update_value()
         if not options.multi then
@@ -1989,12 +2001,12 @@ function components.dropdown(holder, options, zindex)
             if #current > 0 then
                 for _, option in next, current do
                     current_text[#current_text + 1] = option
-                    local text = table.concat(current_text, ", ")
+                    local text = concat(current_text, ", ")
                     value_text.Text = text
                     if value_text.TextBounds.X > dropdown.AbsoluteSize.X - 48 then
-                        table.remove(current_text, #current_text)
-                        value_text.Text = table.concat(current_text, ", ") .. ", ..."
-                        break
+                        remove(current_text, #current_text)
+                        value_text.Text = concat(current_text, ", ") .. ", ..."
+                        return
                     end
                 end
                 library:ChangeThemeObject(value_text, "Text")
@@ -2002,6 +2014,28 @@ function components.dropdown(holder, options, zindex)
                 value_text.Text = "NONE"
                 library:ChangeThemeObject(value_text, "Disabled Text")
             end
+        end
+    end
+
+    local function update_visibility()
+        local y = 0
+        local query = current_search:lower()
+        for name, opt in next, option_objects do
+            local visible = (query == "" or name:lower():find(query))
+            opt.object.Visible = visible
+            if visible then
+                opt.object.Position = newUDim2(0, 0, 0, y - scroll_offset)
+                y = y + 16
+                local relative_y = opt.object.Position.Y.Offset
+                opt.object.Visible = (relative_y >= 0 and relative_y < options.max_height - 22)
+            end
+        end
+        local content_size = y
+        local view_size = options.max_height - 22
+        scroll_bar.Visible = content_size > view_size
+        if scroll_bar.Visible then
+            scroll_bar.Size = newUDim2(1, 0, 0, math.max(10, (view_size / content_size) * view_size))
+            scroll_bar.Position = newUDim2(0, 0, 0, (scroll_offset / content_size) * view_size)
         end
     end
 
@@ -2046,20 +2080,20 @@ function components.dropdown(holder, options, zindex)
         else
             if typeof(chosen) == "table" then
                 for _, option in next, chosen do
-                    if not table.find(current, option) then set(option, true) end
+                    if not find(current, option) then set(option, true) end
                 end
                 library.flags[options.flag] = current
                 options.callback(current)
                 return
             end
-            local idx = table.find(current, chosen)
+            local idx = find(current, chosen)
             if not idx then
                 current[#current + 1] = chosen
                 option_objects[chosen].chosen = true
                 option_objects[chosen].object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
                 library:ChangeThemeObject(option_objects[chosen].text, "Text")
             else
-                table.remove(current, idx)
+                remove(current, idx)
                 option_objects[chosen].chosen = false
                 option_objects[chosen].object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
                 library:ChangeThemeObject(option_objects[chosen].text, "Disabled Text")
@@ -2073,14 +2107,13 @@ function components.dropdown(holder, options, zindex)
     end
 
     local function create_option(name)
-        local object = scroll_holder:Create("Square", {
+        local object = scroll_area:Create("Square", {
             Size = newUDim2(1, 0, 0, 16),
             ZIndex = zindex + 11,
             Transparency = 0,
             Theme = "Dropdown Option Background",
             Outline = false
         })
-        
         local text = object:Create("Text", {
             Text = name,
             Font = library.font,
@@ -2089,52 +2122,41 @@ function components.dropdown(holder, options, zindex)
             Theme = "Disabled Text",
             ZIndex = zindex + 12
         })
-
         object.MouseButton1Click:Connect(function() set(name) end)
         option_objects[name] = {object = object, text = text, chosen = false}
-        
-        local total_h = scroll_holder._list._contentSize
-        content_frame.Size = newUDim2(1, 0, 0, math.min(total_h + 24, options.max_height))
+        update_visibility()
         return option_objects[name]
     end
-
-    search_bar.MouseButton1Click:Connect(function()
-        searching = true
-        library:ChangeThemeObject(search_text, "Text")
-        search_text.Text = current_search .. "|"
-    end)
 
     utility.connect(game:GetService("UserInputService").InputBegan, function(input)
         if not searching then return end
         if input.UserInputType == Enum.UserInputType.Keyboard then
             local key = input.KeyCode.Name
-            if key == "Backspace" then
+            if key == "Backspace" then 
                 current_search = current_search:sub(1, -2)
-            elseif key == "Return" or key == "Escape" then
+            elseif key == "Return" or key == "Escape" then 
                 searching = false
-            elseif #key == 1 or key:find("Number") then
-                local char = key:gsub("Number", "")
-                current_search = current_search .. char:lower()
+            elseif #key == 1 then 
+                current_search = current_search .. key:lower() 
             end
-            
-            search_text.Text = #current_search > 0 and current_search .. "|" or "Search..."
-            for name, opt in next, option_objects do
-                opt.object.Visible = name:lower():find(current_search:lower()) ~= nil
-            end
-        elseif input.UserInputType == Enum.UserInputType.MouseButton1 and not utility.mouse_over(search_bar) then
-            searching = false
-            if #current_search == 0 then search_text.Text = "Search..." library:ChangeThemeObject(search_text, "Disabled Text") end
+            search_text.Text = #current_search > 0 and current_search or "Search..."
+            scroll_offset = 0
+            update_visibility()
         end
     end)
 
-    for _, v in next, options.content do create_option(v) end
+    search_bar.MouseButton1Click:Connect(function()
+        searching = true
+        library:ChangeThemeObject(search_text, "Text")
+    end)
 
+    for _, v in next, options.content do create_option(v) end
     if options.default then set(options.default) end
 
     dropdown.MouseButton1Click:Connect(function()
         content_frame.Visible = not content_frame.Visible
         open_button.Text = content_frame.Visible and "-" or "+"
-        if not content_frame.Visible then searching = false end
+        content_frame.Size = newUDim2(1, 0, 0, content_frame.Visible and options.max_height or 0)
     end)
 
     holder.main.Size = newUDim2(1, 0, 0, 33)
@@ -2145,10 +2167,17 @@ function components.dropdown(holder, options, zindex)
 
     function dropdown_types:Set(v) set(v) end
     function dropdown_types:Add(v) create_option(v) end
+    function dropdown_types:Remove(option)
+        if option_objects[option] then
+            option_objects[option].object:Destroy()
+            option_objects[option] = nil
+            update_visibility()
+        end
+    end
     function dropdown_types:Refresh(tbl)
         for _, o in next, option_objects do o.object:Destroy() end
-        table.clear(option_objects)
-        if options.multi then table.clear(current) else current = nil end
+        clear(option_objects)
+        if options.multi then clear(current) else current = nil end
         for _, v in next, tbl do create_option(v) end
         update_value()
     end
