@@ -1907,7 +1907,7 @@ function components.keybind(holder, options, zindex)
     return keybind_types
 end
 
-function components.dropdown(holder, options, zindex)
+function components.Dropdown(holder, options, zindex)
     zindex = zindex or 11
 
     utility.format(options)
