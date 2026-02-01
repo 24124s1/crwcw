@@ -747,20 +747,17 @@ function Render:Create(class, properties, no_cache)
         object.Parent = self
     end
 
-    for property, value in next, properties do
-        if property == "Theme" then
+    for prop, value in next, properties do
+        if prop == "Theme" then
             library.theme_objects.objects[object] = value
-            property = "Color"
+            prop = "Color"
             value = library.theme[value]
-        end
-
-        if property == "OutlineTheme" then
+        elseif prop == "OutlineTheme" then
             library.theme_objects.outlines[object] = value
-            property = "OutlineColor"
+            prop = "OutlineColor"
             value = library.theme[value]
         end
-
-        object[property] = value
+        object[prop] = value
     end
 
     return object
