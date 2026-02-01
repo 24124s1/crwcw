@@ -1590,7 +1590,7 @@ function components.slider(holder, options, zindex)
         end
     end)
 
-    holder.main.Size = newUDim2(1, 0, 0, 12)
+    holder.main.Size = newUDim2(1, 0, 0, 10)
     holder.section:Resize()
 
     local slider_types = {}
