@@ -3853,18 +3853,20 @@ function library:Playerlist(max_players)
 			local characterModel = plr.Character or plr.CharacterAdded:Wait()
 			local clone = characterModel:Clone()
 			clone.Parent = workspace
-			clone:MoveTo(Vector3.new(0, 9999, 0)) -- move out of sight
+			clone:MoveTo(Vector3.new(0, 9999, 0))
 
 			local viewport = Instance.new("ViewportFrame")
 			viewport.Size = UDim2.new(0, 150, 0, 150)
 			viewport.BackgroundTransparency = 1
-			viewport.CurrentCamera = Instance.new("Camera", viewport)
-			viewport.CurrentCamera.CFrame = CFrame.new(clone:GetModelCFrame().p + Vector3.new(0, 2, 5), clone:GetModelCFrame().p)
+			local cam = Instance.new("Camera")
+			cam.Parent = viewport
+			viewport.CurrentCamera = cam
+			cam.CFrame = CFrame.new(clone:GetModelCFrame().p + Vector3.new(0, 2, 5), clone:GetModelCFrame().p)
 
 			clone.Parent = viewport
 			player_data[plr].image = viewport
 
-			if current_player == plr then
+			if current_player == plr and headshot then
 				headshot:ClearAllChildren()
 				viewport.Parent = headshot
 			end
