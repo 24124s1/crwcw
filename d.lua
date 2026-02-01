@@ -2098,7 +2098,7 @@ function components.dropdown(holder, options, zindex)
         library:ChangeThemeObject(search_display, searching and "Text" or "Disabled Text")
     end)
 
-    utility.connect(game:GetService("UserInputService").InputBegan, function(input)
+	game:GetService("UserInputService").InputBegan:Connect(function(input)
         if not searching or not content_frame.Visible then return end
         if input.UserInputType == Enum.UserInputType.Keyboard then
             local key = input.KeyCode.Name
@@ -2107,10 +2107,15 @@ function components.dropdown(holder, options, zindex)
             elseif #key == 1 then
                 current_search = current_search .. key:lower()
             end
+
             search_display.Text = #current_search > 0 and current_search or "Search..."
+            
             for name, opt in next, option_objects do
                 opt.object.Visible = name:lower():find(current_search:lower()) ~= nil
             end
+
+            local new_size = math.min(content_holder._list._contentSize + 24, options.max_height or 112)
+            content_frame.Size = newUDim2(1, 0, 0, new_size)
         end
     end)
 
