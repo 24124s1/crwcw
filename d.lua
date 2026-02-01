@@ -2179,73 +2179,42 @@ function components.dropdown(holder, options, zindex)
         end
     end
 
-	function dropdown_types:Refresh(newContent)
-		local current_flag = library.flags[options.flag]
+    function dropdown_types:Refresh(tbl)
+        if not options.multi then
+            for _, option in next, option_objects do
+                option.object:Destroy()
+            end
 
-		local existing = {}
-		for name, option in next, option_objects do
-			existing[name] = true
-		end
+            clear(option_objects)
 
-		for name in next, existing do
-			if not table.find(newContent, name) then
-				option_objects[name].object:Destroy()
-				option_objects[name] = nil
-			end
-		end
+            for _, option in next, tbl do
+                create_option(option)
+            end
 
-		for _, name in next, newContent do
-			if not option_objects[name] then
-				create_option(name)
-			end
-		end
+            current = nil
+            update_value()
+            
+            library.flags[options.flag] = nil
+            options.callback(nil)
+        else
+            for _, option in next, option_objects do
+                option.object:Destroy()
+            end
 
-		if not options.multi then
-			if table.find(newContent, current_flag) then
-				current = current_flag
-			else
-				current = nil
-				library.flags[options.flag] = nil
-			end
-		else
-			local newCurrent = {}
-			for _, sel in next, (current_flag or {}) do
-				if table.find(newContent, sel) then
-					newCurrent[#newCurrent+1] = sel
-				end
-			end
-			current = newCurrent
-			library.flags[options.flag] = newCurrent
-		end
-		
-		for name, option in next, option_objects do
-			if options.multi then
-				if find(current, name) then
-					option.chosen = true
-					option.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
-					library:ChangeThemeObject(option.text, "Text")
-				else
-					option.chosen = false
-					option.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
-					library:ChangeThemeObject(option.text, "Disabled Text")
-				end
-			else
-				if current == name then
-					option.chosen = true
-					option.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
-					library:ChangeThemeObject(option.text, "Text")
-				else
-					option.chosen = false
-					option.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
-					library:ChangeThemeObject(option.text, "Disabled Text")
-				end
-			end
-		end
+            clear(option_objects)
+            clear(current)
 
-		update_value()
-	end
+            for _, option in next, tbl do
+                create_option(option)
+            end
 
-	
+            update_value()
+
+            library.flags[options.flag] = {}
+            options.callback{}
+        end
+    end
+
     function dropdown_types:Exists(option)
         return option_objects[option] and true or false
     end
