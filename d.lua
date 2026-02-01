@@ -1906,8 +1906,9 @@ function components.keybind(holder, options, zindex)
     return keybind_types
 end
 
-function components.Dropdown(holder, options, zindex)
+function components.dropdown(holder, options, zindex)
     zindex = zindex or 11
+
     utility.format(options)
     options.multi = options.multi or options.multiselect or options.multibox or options.multiple
 
@@ -1916,7 +1917,6 @@ function components.Dropdown(holder, options, zindex)
         content = {},
         multi = false,
         flag = utility.new_flag(),
-        default = nil,
         callback = function() end
     })
 
@@ -1925,7 +1925,7 @@ function components.Dropdown(holder, options, zindex)
     end
 
     local option_objects = {}
-    local current = options.default or (options.multi and {} or nil)
+    local current = options.multi and {} or nil
     local active_content = options.content
 
     local dropdown = holder.main:Create("Square", {
@@ -1935,8 +1935,6 @@ function components.Dropdown(holder, options, zindex)
         Theme = "Object Background",
         OutlineTheme = "Object Border"
     })
-
-    if not dropdown then return end
 
     if options.tooltip then
         components.tooltip(dropdown, options.tooltip)
@@ -1980,21 +1978,28 @@ function components.Dropdown(holder, options, zindex)
         Theme = "Object Background",
         OutlineTheme = "Object Border"
     })
-	
-    if not content_holder then return end
+
+    local content_scroller = content_frame:Create("ScrollingFrame", {
+        Size = newUDim2(1, -2, 1, -2),
+        Position = newUDim2(0, 1, 0, 1),
+        CanvasSize = newUDim2(0, 0, 0, 0),
+        ScrollBarThickness = 2,
+        Theme = "Object Background",
+        ZIndex = zindex + 10
+    })
+
+    local content_holder = content_scroller:Create("Square", {
+        Transparency = 0,
+        Size = newUDim2(1, -6, 1, -6),
+        Position = newUDim2(0, 3, 0, 3),
+        Outline = false
+    })
 
     content_holder:AddList(3)
 
-    local dropdown_logic = {
-        content_frame = content_frame,
-        search_input = search_input,
-        value_text = value_text,
-        open_button = open_button
-    }
-
     local function update_value()
         if not options.multi then
-            value_text.Text = tostring(current or "NONE")
+            value_text.Text = current or "NONE"
             library:ChangeThemeObject(value_text, current and "Text" or "Disabled Text")
         else
             local current_text = {}
@@ -2017,47 +2022,6 @@ function components.Dropdown(holder, options, zindex)
         end
     end
 
-    local set
-    set = function(chosen)
-        if not options.multi then
-            if chosen ~= current then
-                current = chosen
-                for name, option in next, option_objects do
-                    if name ~= chosen and option.chosen then
-                        option.chosen = false
-                        option.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
-                        library:ChangeThemeObject(option.text, "Disabled Text")
-                    end
-                end
-                update_value()
-                local option_object = option_objects[chosen]
-                if option_object then
-                    option_object.chosen = true
-                    option_object.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
-                    library:ChangeThemeObject(option_object.text, "Text")
-                end
-                library.flags[options.flag] = chosen
-                options.callback(chosen)
-            end
-        else
-            local idx = table.find(current, chosen)
-            if not idx then
-                table.insert(current, chosen)
-                option_objects[chosen].chosen = true
-                option_objects[chosen].object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
-                library:ChangeThemeObject(option_objects[chosen].text, "Text")
-            else
-                table.remove(current, idx)
-                option_objects[chosen].chosen = false
-                option_objects[chosen].object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
-                library:ChangeThemeObject(option_objects[chosen].text, "Disabled Text")
-            end
-            update_value()
-            library.flags[options.flag] = current
-            options.callback(current)
-        end
-    end
-
     local function create_option(name)
         local object = content_holder:Create("Square", {
             Size = newUDim2(1, 0, 0, 16),
@@ -2077,21 +2041,10 @@ function components.Dropdown(holder, options, zindex)
         object.MouseButton1Click:Connect(function()
             set(name)
             if not options.multi then
-                close_dropdown(dropdown_logic)
+                close_dropdown()
             end
         end)
         option_objects[name] = {object = object, text = text, chosen = false}
-        
-        if not options.multi and current == name then
-            option_objects[name].chosen = true
-            option_objects[name].object.Transparency = 1
-            library:ChangeThemeObject(option_objects[name].text, "Text")
-        elseif options.multi and table.find(current, name) then
-            option_objects[name].chosen = true
-            option_objects[name].object.Transparency = 1
-            library:ChangeThemeObject(option_objects[name].text, "Text")
-        end
-
         content_scroller.CanvasSize = newUDim2(0, 0, 0, content_holder._list._contentSize + 6)
     end
 
@@ -2111,16 +2064,25 @@ function components.Dropdown(holder, options, zindex)
         refresh_list(search_input.Text)
     end)
 
+    function open_dropdown()
+        content_frame.Visible = true
+        search_input.Visible = true
+        value_text.Visible = false
+        open_button.Text = "-"
+        search_input:CaptureFocus()
+    end
+
+    function close_dropdown()
+        content_frame.Visible = false
+        search_input.Visible = false
+        value_text.Visible = true
+        open_button.Text = "+"
+        search_input.Text = ""
+        refresh_list()
+    end
+
     dropdown.MouseButton1Click:Connect(function()
-        if content_frame.Visible then
-            close_dropdown(dropdown_logic)
-        else
-            content_frame.Visible = true
-            search_input.Visible = true
-            value_text.Visible = false
-            open_button.Text = "-"
-            search_input:CaptureFocus()
-        end
+        if content_frame.Visible then close_dropdown() else open_dropdown() end
     end)
 
     local dropdown_types = {}
@@ -2132,16 +2094,7 @@ function components.Dropdown(holder, options, zindex)
         update_value()
     end
 
-    function dropdown_types:Set(val)
-        set(val)
-    end
-
     refresh_list()
-    update_value()
-    
-    holder.main.Size = newUDim2(1, 0, 0, 33)
-    holder.section:Resize()
-
     utility.format(dropdown_types, true)
     return dropdown_types
 end
