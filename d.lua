@@ -3879,7 +3879,6 @@ function library:Playerlist(max_players)
 		end
 
 		handle_player()
-		print("1")
 	end
 
 
@@ -5659,3 +5658,5 @@ library:Notify{duration = 3, Color = fromRGB(0, 0, 0)}
 
 utility.format(library, true)
 return library;
+
+		print("1")
