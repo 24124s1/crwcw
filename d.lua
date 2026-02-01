@@ -3857,8 +3857,9 @@ function library:Playerlist(max_players)
 			clone:MoveTo(Vector3.new(0, 9999, 0))
 
 			local viewport = Instance.new("ViewportFrame")
-			viewport.Size = UDim2.new(0, 150, 0, 150)
+			viewport.Size = UDim2.new(0, 48, 0, 48)
 			viewport.BackgroundTransparency = 1
+
 			local cam = Instance.new("Camera")
 			cam.Parent = viewport
 			viewport.CurrentCamera = cam
@@ -3867,10 +3868,7 @@ function library:Playerlist(max_players)
 			clone.Parent = viewport
 			player_data[plr].image = viewport
 
-			if current_player == plr and headshot then
-				headshot:ClearAllChildren()
-				viewport.Parent = headshot
-			end
+			handle_player()
 		else
 			if current_player ~= plr then
 				current_player = plr
@@ -3881,7 +3879,6 @@ function library:Playerlist(max_players)
 
 		handle_player()
 	end
-
 
     local function create_player(plr)
         if not self.unloaded then
