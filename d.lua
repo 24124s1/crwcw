@@ -2179,15 +2179,45 @@ function components.dropdown(holder, options, zindex)
         end
     end
 
-	function dropdown_types:Refresh()
+	function dropdown_types:Refresh(newContent)
 		local current_flag = library.flags[options.flag]
 
-		if not options.multi then
-			current = current_flag
-		else
-			current = current_flag or {}
+		local existing = {}
+		for name, option in next, option_objects do
+			existing[name] = true
 		end
 
+		for name in next, existing do
+			if not table.find(newContent, name) then
+				option_objects[name].object:Destroy()
+				option_objects[name] = nil
+			end
+		end
+
+		for _, name in next, newContent do
+			if not option_objects[name] then
+				create_option(name)
+			end
+		end
+
+		if not options.multi then
+			if table.find(newContent, current_flag) then
+				current = current_flag
+			else
+				current = nil
+				library.flags[options.flag] = nil
+			end
+		else
+			local newCurrent = {}
+			for _, sel in next, (current_flag or {}) do
+				if table.find(newContent, sel) then
+					newCurrent[#newCurrent+1] = sel
+				end
+			end
+			current = newCurrent
+			library.flags[options.flag] = newCurrent
+		end
+		
 		for name, option in next, option_objects do
 			if options.multi then
 				if find(current, name) then
@@ -2214,6 +2244,7 @@ function components.dropdown(holder, options, zindex)
 
 		update_value()
 	end
+
 	
     function dropdown_types:Exists(option)
         return option_objects[option] and true or false
