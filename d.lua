@@ -748,11 +748,11 @@ function Render:Create(class, properties, no_cache)
     end
 
     for prop, value in next, properties do
-        if prop == "Theme" then
+        if prop == "Theme" and library.theme[value] then
             library.theme_objects.objects[object] = value
             prop = "Color"
             value = library.theme[value]
-        elseif prop == "OutlineTheme" then
+        elseif prop == "OutlineTheme" and library.theme[value] then
             library.theme_objects.outlines[object] = value
             prop = "OutlineColor"
             value = library.theme[value]
