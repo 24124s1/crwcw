@@ -1991,16 +1991,7 @@ function components.Dropdown(holder, options, zindex)
         BorderSizePixel = 0,
         BackgroundTransparency = 1
     })
-
-    if not content_scroller then return end
-
-    local content_holder = content_scroller:Create("Square", {
-        Transparency = 0,
-        Size = newUDim2(1, -6, 1, -6),
-        Position = newUDim2(0, 3, 0, 3),
-        Outline = false
-    })
-
+	
     if not content_holder then return end
 
     content_holder:AddList(3)
