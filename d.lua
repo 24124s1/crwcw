@@ -1902,7 +1902,8 @@ function components.dropdown(holder, options, zindex)
         content = {},
         multi = false,
         flag = utility.new_flag(),
-        callback = function() end
+        callback = function() end,
+        max_height = 120 
     })
 
     local option_objects = {}
@@ -1947,46 +1948,32 @@ function components.dropdown(holder, options, zindex)
         ZIndex = zindex + 9,
         Visible = false,
         Theme = "Object Background",
-        OutlineTheme = "Object Border",
-        ClipsDescendants = true
+        OutlineTheme = "Object Border"
     })
 
-    local content_holder = content_frame:Create("Square", {
-        Transparency = 0,
-        Size = newUDim2(1, -6, 1, -6),
+    local search_bar = content_frame:Create("TextBox", {
+        Size = newUDim2(1, -6, 0, 15),
         Position = newUDim2(0, 3, 0, 3),
-        Outline = false
-    })
-
-    content_holder:AddList(3)
-
-    local search_bar = content_frame:Create("Square", {
-        Size = newUDim2(1, -6, 0, 16),
-        Position = newUDim2(0, 3, 0, 3),
-        Theme = "Object Background",
-        Outline = false
-    })
-
-    local search_text = search_bar:Create("TextBox", {
         Text = "",
+        PlaceholderText = "Search...",
         Font = library.font,
         Size = library.font_size,
-        Position = newUDim2(0, 4, 0, 0),
-        Theme = "Text",
-        ZIndex = zindex + 12
+        ZIndex = zindex + 10,
+        Theme = "Object Background",
+        OutlineTheme = "Object Border"
     })
 
-    local function filter_options(query)
-        for name, obj in next, option_objects do
-            obj.object.Visible = query == "" or name:lower():find(query:lower()) ~= nil
-        end
-        content_holder._list:Update()
-        content_frame.Size = newUDim2(1, 0, 0, search_bar.AbsoluteSize.Y + content_holder._list._contentSize + 3)
-    end
+    local scroll_container = content_frame:Create("ScrollingFrame", {
+        Size = newUDim2(1, -6, 1, -24),
+        Position = newUDim2(0, 3, 0, 21),
+        CanvasSize = newUDim2(0, 0, 0, 0),
+        ScrollBarThickness = 2,
+        ZIndex = zindex + 10,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0
+    })
 
-    search_text:GetPropertyChangedSignal("Text"):Connect(function()
-        filter_options(search_text.Text)
-    end)
+    scroll_container:AddList(0)
 
     local function update_value()
         if not options.multi then
@@ -2021,7 +2008,6 @@ function components.dropdown(holder, options, zindex)
                 chosen = chosen:sub(5)
                 is_config = true
             end
-
             if chosen ~= current then
                 current = chosen
                 for name, option in next, option_objects do
@@ -2068,7 +2054,6 @@ function components.dropdown(holder, options, zindex)
                 options.callback(current)
                 return
             end
-
             local idx = find(current, chosen)
             if not idx then
                 current[#current + 1] = chosen
@@ -2093,9 +2078,9 @@ function components.dropdown(holder, options, zindex)
     end
 
     local function create_option(name)
-        local object = content_holder:Create("Square", {
+        local object = scroll_container:Create("Square", {
             Size = newUDim2(1, 0, 0, 16),
-            ZIndex = zindex + 10,
+            ZIndex = zindex + 11,
             Transparency = 0,
             Theme = "Dropdown Option Background",
             Outline = false
@@ -2108,7 +2093,7 @@ function components.dropdown(holder, options, zindex)
             Position = newUDim2(0, 6, 0, 1),
             Ignored = true,
             Theme = "Disabled Text",
-            ZIndex = zindex + 11
+            ZIndex = zindex + 12
         })
 
         object.MouseButton1Click:Connect(function()
@@ -2118,10 +2103,21 @@ function components.dropdown(holder, options, zindex)
         local option = {object = object, text = text, chosen = false}
         option_objects[name] = option
 
-        content_frame.Size = newUDim2(1, 0, 0, search_bar.AbsoluteSize.Y + content_holder._list._contentSize + 3)
+        local total_size = scroll_container._list._contentSize
+        scroll_container.CanvasSize = newUDim2(0, 0, 0, total_size)
+        
+        local target_height = math.min(total_size + 24, options.max_height)
+        content_frame.Size = newUDim2(1, 0, 0, target_height)
 
         return option
     end
+
+    search_bar:GetPropertyChangedSignal("Text"):Connect(function()
+        local query = search_bar.Text:lower()
+        for name, option in next, option_objects do
+            option.object.Visible = name:lower():find(query) and true or false
+        end
+    end)
 
     for _, option in next, options.content do
         create_option(option)
@@ -2150,51 +2146,28 @@ function components.dropdown(holder, options, zindex)
         library.config_objects[options.flag] = dropdown_types
     end
 
-    function dropdown_types:Set(option)
-        set(option)
-    end
-
-    function dropdown_types:Add(option)
-        create_option(option)
-    end
+    function dropdown_types:Set(option) set(option) end
+    function dropdown_types:Add(option) create_option(option) end
 
     function dropdown_types:Remove(option)
-        option_objects[option].object:Destroy()
-        content_frame.Size = newUDim2(1, 0, 0, search_bar.AbsoluteSize.Y + content_holder._list._contentSize + 3)
-        if not options.multi then
-            if current == option then
-                current = nil
-                update_value()
-                library.flags[options.flag] = nil
-                options.callback(nil)
-            end 
-        else
-            local idx = find(current, option)
-            if idx then
-                remove(current, idx)
-                update_value()
-                library.flags[options.flag] = current
-                options.callback(current)
-            end
+        if option_objects[option] then
+            option_objects[option].object:Destroy()
+            option_objects[option] = nil
+            local total_size = scroll_container._list._contentSize
+            scroll_container.CanvasSize = newUDim2(0, 0, 0, total_size)
+            content_frame.Size = newUDim2(1, 0, 0, math.min(total_size + 24, options.max_height))
         end
     end
 
     function dropdown_types:Refresh(tbl)
-        for _, option in next, option_objects do
-            option.object:Destroy()
-        end
+        for _, option in next, option_objects do option.object:Destroy() end
         clear(option_objects)
-        clear(current)
-        for _, option in next, tbl do
-            create_option(option)
-        end
+        if options.multi then clear(current) else current = nil end
+        for _, option in next, tbl do create_option(option) end
         update_value()
-        library.flags[options.flag] = options.multi and {} or nil
-        options.callback(options.multi and {} or nil)
-    end
-
-    function dropdown_types:Exists(option)
-        return option_objects[option] and true or false
+        local val = options.multi and {} or nil
+        library.flags[options.flag] = val
+        options.callback(val)
     end
 
     utility.format(dropdown_types, true)
