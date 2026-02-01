@@ -1891,7 +1891,6 @@ function components.keybind(holder, options, zindex)
     return keybind_types
 end
 
-add a scroll bar and search bar and dont make it space out that much from other stuff like toggles etc 
 function components.dropdown(holder, options, zindex)
     zindex = zindex or 11
 
