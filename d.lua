@@ -3879,6 +3879,7 @@ function library:Playerlist(max_players)
 		end
 
 		handle_player()
+		print("1")
 	end
 
 
