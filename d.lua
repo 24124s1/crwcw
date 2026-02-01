@@ -1980,17 +1980,6 @@ function components.Dropdown(holder, options, zindex)
         Theme = "Object Background",
         OutlineTheme = "Object Border"
     })
-
-    local content_scroller = content_frame:Create("ScrollingFrame", {
-        Size = newUDim2(1, -2, 1, -2),
-        Position = newUDim2(0, 1, 0, 1),
-        CanvasSize = newUDim2(0, 0, 0, 0),
-        ScrollBarThickness = 2,
-        Theme = "Object Background",
-        ZIndex = zindex + 10,
-        BorderSizePixel = 0,
-        BackgroundTransparency = 1
-    })
 	
     if not content_holder then return end
 
