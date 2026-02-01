@@ -3844,31 +3844,36 @@ function library:Playerlist(max_players)
         end
     end
 
-    local function create_card(plr)
-        if not player_data[plr].image then
-            current_player = plr
-            player_data[plr].name = plr.Name
+	local function create_card(plr)
+		if not player_data[plr].image then
+			current_player = plr
+			player_data[plr].name = plr.Name
 
-            spawn(function()
-                local thumbnail_data = HttpService:JSONDecode(HttpService:GetAsync(("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%s&size=60x60&format=Png"):format(plr.UserId)))
-                local image = HttpService:GetAsync(thumbnail_data.data[1].imageUrl)
+			spawn(function()
+				local thumbnail_data = HttpService:JSONDecode(
+					HttpService:GetAsync(
+						("https://thumbnails.roblox.com/v1/users/avatar?userIds=%s&size=150x150&format=Png&isCircular=false"):format(plr.UserId)
+					)
+				)
+				
+				local image = HttpService:GetAsync(thumbnail_data.data[1].imageUrl)
+				player_data[plr].image = image
 
-                player_data[plr].image = image
+				if current_player == plr then
+					headshot.Data = image
+				end
+			end)
+		else
+			if current_player ~= plr then
+				current_player = plr
+			else
+				current_player = nil
+			end
+		end
 
-                if current_player == plr then
-                  headshot.Data = image
-                end
-            end)
-        else
-            if current_player ~= plr then
-                current_player = plr
-            else
-                current_player = nil
-            end
-        end
+		handle_player()
+	end
 
-        handle_player()
-    end
 
     local function create_player(plr)
         if not self.unloaded then
