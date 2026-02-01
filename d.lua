@@ -733,7 +733,10 @@ library.paste_textbox.Position = newUDim2(-200, 0, 0, 0)
 function Render:Create(class, properties, no_cache)
     properties = properties or {}
 
+    if not Render or not Render.new then return end
+
     local object = Render.new(class)
+    if not object then return end
 
     if not no_cache then
         library.objects[object] = object
@@ -752,24 +755,20 @@ function Render:Create(class, properties, no_cache)
         end
     end
 
-    if self ~= Render then
+    if self ~= Render and self ~= nil then
         object.Parent = self
     end
 
     for property, value in next, properties do
         if property == "Theme" then
             library.theme_objects.objects[object] = value
-            property = "Color"
-            value = library.theme[value]
-        end
-
-        if property == "OutlineTheme" then
+            object.Color = library.theme[value]
+        elseif property == "OutlineTheme" then
             library.theme_objects.outlines[object] = value
-            property = "OutlineColor"
-            value = library.theme[value]
+            object.OutlineColor = library.theme[value]
+        else
+            object[property] = value
         end
-
-        object[property] = value
     end
 
     return object
