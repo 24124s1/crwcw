@@ -5424,7 +5424,6 @@ function library:Load(options)
                 if not from_setting then
                     (unload or function()
                         library:Unload();
-						Loaded = false
                     end)();
                 end
             end
