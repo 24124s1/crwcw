@@ -3229,7 +3229,7 @@ function library:Loader(options)
     utility.format(options);
 
     utility.defaults(options, {
-        title = "Exodus",
+        title = "Iridescent",
         description = "Loading...",
         percentage = 50,
         date = "16/01/22",
@@ -4536,10 +4536,10 @@ function library:Load(options)
     utility.format(options)
 
     utility.defaults(options, {
-        title = options.name or "exodus",
+        title = options.name or "Iridescent",
         theme = "Default",
         overrides = {},
-        folder = "exodus",
+        folder = "Iridescent",
         extension = "json",
         game = "universal",
         tweenspeed = options.animspeed or 0.1,
@@ -5544,7 +5544,7 @@ library.Playerlist:Label{name = "Team: ", handler = function(plr)
 end}
 
 
-local watermark = library:Watermark("exodus | dev | test | 2.3b fps")
+local watermark = library:Watermark("Iridescent | dev | test | 2.3b fps")
 window:SettingsTab(watermark)
 
 local tab = window:Tab("rage")
