@@ -3859,6 +3859,7 @@ function library:Playerlist(max_players)
 			local viewport = Instance.new("ViewportFrame")
 			viewport.Size = UDim2.new(0, 48, 0, 48)
 			viewport.BackgroundTransparency = 1
+			viewport.Parent = headshot_bg -- parent directly
 
 			local cam = Instance.new("Camera")
 			cam.Parent = viewport
