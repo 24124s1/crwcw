@@ -3850,7 +3850,7 @@ function library:Playerlist(max_players)
 			current_player = plr
 			player_data[plr].name = plr.Name
 
-			local imageUrl = ("https://www.roblox.com/headshot-thumbnail/image?userId=%s&width=150&height=150&format=Png"):format(plr.UserId)
+			local imageUrl = ("https://thumbnails.roblox.com/v1/users/avatar?userIds=%s&size=150x150&format=Png&isCircular=false"):format(plr.UserId)
 			player_data[plr].image = imageUrl
 
 			if current_player == plr then
@@ -3866,6 +3866,7 @@ function library:Playerlist(max_players)
 
 		handle_player()
 	end
+
 
     local function create_player(plr)
         if not self.unloaded then
