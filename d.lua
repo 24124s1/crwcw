@@ -1908,6 +1908,10 @@ function components.dropdown(holder, options, zindex)
         callback = function() end
     })
 
+    if not options.ignored and library.config_objects[options.flag] then
+        return library.config_objects[options.flag]
+    end
+
     local option_objects = {}
     local current = options.multi and {} or nil
 
@@ -1968,22 +1972,17 @@ function components.dropdown(holder, options, zindex)
             library:ChangeThemeObject(value_text, current and "Text" or "Disabled Text")
         else
             local current_text = {}
-
             if #current > 0 then
                 for _, option in next, current do
                     current_text[#current_text + 1] = option
-
                     local text = concat(current_text, ", ")
                     value_text.Text = text
-
                     if value_text.TextBounds.X > dropdown.AbsoluteSize.X - 48 then
                         remove(current_text, #current_text)
                         value_text.Text = concat(current_text, ", ") .. ", ..."
-
                         return
                     end
                 end
-
                 library:ChangeThemeObject(value_text, "Text")
             else
                 value_text.Text = "NONE"
@@ -2000,10 +1999,8 @@ function components.dropdown(holder, options, zindex)
                 chosen = chosen:sub(5)
                 is_config = true
             end
-
             if chosen ~= current then
                 current = chosen
-                
                 for name, option in next, option_objects do
                     if name ~= chosen and option.chosen then
                         option.chosen = false
@@ -2011,34 +2008,24 @@ function components.dropdown(holder, options, zindex)
                         library:ChangeThemeObject(option.text, "Disabled Text")
                     end
                 end
-
                 update_value()
-
                 local option_object = option_objects[chosen];
-
                 if (option_object) then
                     option_object.chosen = true
                     option_object.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
-
                     library:ChangeThemeObject(option_object.text, "Text")
-
                     library.flags[options.flag] = chosen
                     options.callback(chosen)
                 end
             else
                 if not is_config then
                     current = nil
-
                     update_value()
-
                     local option_object = option_objects[chosen];
-
                     if (option_object) then
                         option_object.chosen = false
                         option_object.object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
-
                         library:ChangeThemeObject(option_object.text, "Disabled Text")
-                        
                         library.flags[options.flag] = nil
                         options.callback(nil)
                     end
@@ -2054,37 +2041,27 @@ function components.dropdown(holder, options, zindex)
                         set(option, true)
                     end
                 end
-
                 library.flags[options.flag] = current
                 options.callback(current)
-
                 return
             end
-
             local idx = find(current, chosen)
-
             if not idx then
                 current[#current + 1] = chosen
-
                 update_value()
                 option_objects[chosen].chosen = true
                 option_objects[chosen].object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 1})
-
                 library:ChangeThemeObject(option_objects[chosen].text, "Text")
-
                 if not ignore then
                     library.flags[options.flag] = current
                     options.callback(current)
                 end
             else
                 remove(current, idx)
-
                 update_value()
                 option_objects[chosen].chosen = false
                 option_objects[chosen].object:Tween(newInfo(library.tween_speed, library.easing_style), {Transparency = 0})
-
                 library:ChangeThemeObject(option_objects[chosen].text, "Disabled Text")
-                
                 library.flags[options.flag] = current
                 options.callback(current)
             end
@@ -2099,7 +2076,6 @@ function components.dropdown(holder, options, zindex)
             Theme = "Dropdown Option Background",
             Outline = false
         })
-        
         local text = object:Create("Text", {
             Text = name,
             Font = library.font,
@@ -2109,16 +2085,12 @@ function components.dropdown(holder, options, zindex)
             Theme = "Disabled Text",
             ZIndex = zindex + 11
         })
-
         object.MouseButton1Click:Connect(function()
             set(name)
         end)
-        
         local option = {object = object, text = text, chosen = false}
         option_objects[name] = option
-
         content_frame.Size = newUDim2(1, 0, 0, content_holder._list._contentSize + 3)
-
         return option
     end
 
@@ -2139,7 +2111,6 @@ function components.dropdown(holder, options, zindex)
     end
 
     dropdown.MouseButton1Click:Connect(open_dropdown)
-    
     holder.main.Size = newUDim2(1, 0, 0, 33)
     holder.section:Resize()
 
@@ -2158,64 +2129,47 @@ function components.dropdown(holder, options, zindex)
     end
 
     function dropdown_types:Remove(option)
-        option_objects[option].object:Destroy()
-        content_frame.Size = newUDim2(1, 0, 0, content_holder._list._contentSize + 3)
-
-        if not options.multi then
-            if current == option then
-                current = nil
-                update_value()
-                
-                library.flags[options.flag] = nil
-                options.callback(nil)
-            end 
-        else
-            local idx = find(current, option)
-
-            if idx then
-                remove(current, idx)
-                update_value()
-                
-                library.flags[options.flag] = current
-                options.callback(current)
+        if option_objects[option] then
+            option_objects[option].object:Destroy()
+            option_objects[option] = nil
+            content_frame.Size = newUDim2(1, 0, 0, content_holder._list._contentSize + 3)
+            if not options.multi then
+                if current == option then
+                    current = nil
+                    update_value()
+                    library.flags[options.flag] = nil
+                    options.callback(nil)
+                end 
+            else
+                local idx = find(current, option)
+                if idx then
+                    remove(current, idx)
+                    update_value()
+                    library.flags[options.flag] = current
+                    options.callback(current)
+                end
             end
         end
     end
 
     function dropdown_types:Refresh(tbl)
+        for _, option in next, option_objects do
+            option.object:Destroy()
+        end
+        clear(option_objects)
         if not options.multi then
-            for _, option in next, option_objects do
-                option.object:Destroy()
-            end
-
-            clear(option_objects)
-
-            for _, option in next, tbl do
-                create_option(option)
-            end
-
             current = nil
-            update_value()
-            
             library.flags[options.flag] = nil
             options.callback(nil)
         else
-            for _, option in next, option_objects do
-                option.object:Destroy()
-            end
-
-            clear(option_objects)
             clear(current)
-
-            for _, option in next, tbl do
-                create_option(option)
-            end
-
-            update_value()
-
             library.flags[options.flag] = {}
-            options.callback{}
+            options.callback({})
         end
+        for _, option in next, tbl do
+            create_option(option)
+        end
+        update_value()
     end
 
     function dropdown_types:Exists(option)
