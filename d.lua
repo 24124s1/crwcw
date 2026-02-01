@@ -1515,7 +1515,7 @@ function components.slider(holder, options, zindex)
 
     local slider = holder.main:Create("Square", {
         Size = newUDim2(1, 0, 0, 10),
-        Position = newUDim2(0, 0, 0, 18),
+        Position = newUDim2(0, 0, 0, 0),
         ZIndex = zindex,
         Theme = "Object Background",
         OutlineTheme = "Object Border"
@@ -1548,40 +1548,6 @@ function components.slider(holder, options, zindex)
         Center = true,
         ZIndex = zindex + 3
     })
-
-    local plus = holder.main:Create("Text", {
-        Text = "+",
-        Font = library.font,
-        Ignored = false,
-        Size = library.font_size,
-        Position = newUDim2(1, -7, 0, 0),
-        Theme = "Text",
-        ZIndex = zindex
-    })
-
-    local minus = holder.main:Create("Text", {
-        Text = "-",
-        Font = library.font,
-        Ignored = false,
-        Size = library.font_size,
-        Position = newUDim2(1, -21, 0, 0),
-        Theme = "Text",
-        ZIndex = zindex
-    })
-
-    holder.plus = plus; holder.minus = minus
-
-    if holder.keybind then
-        plus.Position = newUDim2(1, -(13 + holder.keybind.AbsoluteSize.X), 0, 0)
-        minus.Position = newUDim2(1, -(29 + holder.keybind.AbsoluteSize.X), 0, 0)
-    end
-
-    if holder.colorpickers and holder.colorpickers > 0 then
-        holder.plus.Position = newUDim2(1, -(7 + holder.colorpickers * 24), 0, 0)
-        holder.minus.Position = newUDim2(1, -(21 + holder.colorpickers * 24), 0, 0)
-    end
-
-    local current_tween
 
     local function set(value)
         value = clamp(utility.round(tonumber(value), options.float), options.min, options.max)
@@ -1624,15 +1590,7 @@ function components.slider(holder, options, zindex)
         end
     end)
 
-    plus.MouseButton1Click:Connect(function()
-        set(current_value + options.float)
-    end)
-
-    minus.MouseButton1Click:Connect(function()
-        set(current_value - options.float)
-    end)
-
-    holder.main.Size = newUDim2(1, 0, 0, 28)
+    holder.main.Size = newUDim2(1, 0, 0, 12)
     holder.section:Resize()
 
     local slider_types = {}
