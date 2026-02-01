@@ -3851,23 +3851,8 @@ function library:Playerlist(max_players)
 			current_player = plr
 			player_data[plr].name = plr.Name
 
-			local characterModel = plr.Character or plr.CharacterAdded:Wait()
-			local clone = characterModel:Clone()
-			clone.Parent = workspace
-			clone:MoveTo(Vector3.new(0, 9999, 0))
-
-			local viewport = Instance.new("ViewportFrame")
-			viewport.Size = UDim2.new(0, 48, 0, 48)
-			viewport.BackgroundTransparency = 1
-			viewport.Parent = headshot_bg -- parent directly
-
-			local cam = Instance.new("Camera")
-			cam.Parent = viewport
-			viewport.CurrentCamera = cam
-			cam.CFrame = CFrame.new(clone:GetModelCFrame().p + Vector3.new(0, 2, 5), clone:GetModelCFrame().p)
-
-			clone.Parent = viewport
-			player_data[plr].image = viewport
+			local imageUrl = ("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%s&size=48x48&format=Png&isCircular=false"):format(plr.UserId)
+			player_data[plr].image = imageUrl
 
 			handle_player()
 		else
