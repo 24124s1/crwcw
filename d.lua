@@ -927,7 +927,7 @@ function utility.textbox(object, text, placeholder, clear_on_focus, default)
         
         box.Changed:Fire(str)
 
-        text.Text = current_uncut_str == "" and placeholder .. (indicator and "|" or "") or current_uncut_str .. (will_cut and "..." or "") .. (indicator and "|" or "")
+        text.Text = current_uncut_str == "" and placeholder .. (indicator and "| " or "") or current_uncut_str .. (will_cut and "..." or "") .. (indicator and "| " or "")
 
         library.theme_objects[text] = str == "" and library.theme["Disabled Text"] or library.theme["Text"]
         text.Color = str == "" and library.theme["Disabled Text"] or library.theme["Text"]
