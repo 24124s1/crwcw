@@ -1,15 +1,6 @@
 --[[
     Render object class thing for UI Libraries
 ]]
-
-if getgenv().IRI_Loaded and getgenv().IY_DEBUG ~= true then
-    print("already loaded")
-    return
-end
-
-pcall(function() getgenv().IRI_Loaded = true end)
-local Loaded = true
-
 repeat task.wait() until game:IsLoaded()
 -- Localization
 local fromRGB = Color3.fromRGB
