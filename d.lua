@@ -3851,10 +3851,14 @@ function library:Playerlist(max_players)
 			current_player = plr
 			player_data[plr].name = plr.Name
 
-			local imageUrl = ("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%s&size=48x48&format=Png&isCircular=false"):format(plr.UserId)
-			player_data[plr].image = imageUrl
+			spawn(function()
+				local imageUrl = ("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%s&size=60x60&format=Png&isCircular=false"):format(plr.UserId)
+				player_data[plr].image = imageUrl
 
-			handle_player()
+				if current_player == plr then
+					headshot.Data = imageUrl
+				end
+			end)
 		else
 			if current_player ~= plr then
 				current_player = plr
