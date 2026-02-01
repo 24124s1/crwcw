@@ -743,6 +743,15 @@ function Render:Create(class, properties, no_cache)
         library.text[object] = object
     end
 
+    if class == "Input" then
+        object = Render.new("Text")
+        object.Input = true
+        library.text[object] = object
+        if not no_cache then
+            library.objects[object] = object
+        end
+    end
+
     if self ~= Render then
         object.Parent = self
     end
@@ -1403,9 +1412,13 @@ function components.toggle(holder, options, zindex)
         return components.slider(holder, options, zindex + 2)
     end
 
-    function toggle_types:Dropdown(options)
-        return components.dropdown(holder, options, zindex + 2)
-    end
+	function toggle_types:Dropdown(options)
+    	if options.flag and library.config_objects[options.flag] then
+        	return library.config_objects[options.flag]
+    	end
+
+    	return components.dropdown(holder, options, zindex + 2)
+	end
 
     function toggle_types:Colorpicker(options)
         return components.colorpicker(holder, options, zindex + 2)
