@@ -1496,7 +1496,7 @@ function components.slider(holder, options, zindex)
     utility.format(options)
 
     utility.defaults(options, {
-        name = options.text or "Slider",
+        name = options.text or "",
         default = options.min or 1,
         ignored = options.noconfig or options.ignoreconfig or options.configignore or false,
         float = 0.1,
