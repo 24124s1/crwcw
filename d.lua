@@ -4311,9 +4311,9 @@ function library:Window(options)
             return components.box(self, options, 79)
         end
 
-        function section_types:Slider(options)
+		function section_types:Slider(options)
             utility.format(options)
-            options.name = options.name or "slider"
+            options.name = options.text or options.name or "slider"
 
             local holder = {section = self}
 
