@@ -1543,10 +1543,10 @@ function components.slider(holder, options, zindex)
         Text = "",
         Font = library.font,
         Size = library.font_size,
-        Position = newUDim2(0.5, 0, 0, -2),
-        Theme = "Text",
+        Position = newUDim2(0.5, 0, 0.5, 0),
         Center = true,
-        ZIndex = zindex + 3
+        ZIndex = zindex + 3,
+        Theme = "Text"
     })
 
     local function set(value)
@@ -1555,7 +1555,10 @@ function components.slider(holder, options, zindex)
 
         if value ~= current_value then
             current_value = value
-            fill:Tween(newInfo(library.tween_speed, library.easing_style), {Size = newUDim2((value - options.min) / (options.max - options.min), 0, 1, 0)})
+            fill:Tween(
+                newInfo(library.tween_speed, library.easing_style),
+                { Size = newUDim2((value - options.min) / (options.max - options.min), 0, 1, 0) }
+            )
         end
 
         library.flags[options.flag] = value
@@ -1567,7 +1570,6 @@ function components.slider(holder, options, zindex)
     local function slide(input)
         local sizeX = (input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X
         local value = clamp((options.max - options.min) * sizeX + options.min, options.min, options.max)
-
         set(value)
     end
 
@@ -1575,7 +1577,7 @@ function components.slider(holder, options, zindex)
 
     slider.MouseButton1Down:Connect(function()
         sliding = true
-        slide{Position = services.UserInputService:GetMouseLocation()}
+        slide({ Position = services.UserInputService:GetMouseLocation() })
     end)
 
     library:Connect(services.UserInputService.InputEnded, function(input)
