@@ -4477,7 +4477,7 @@ function library:Load(options)
         fontsize = 13,
         discord = "discord.gg/DdZjcuuZq8",
         sizex = 700,
-        sizey = 800
+        sizey = 590
     })
 
     options.font = options.font:lower()
