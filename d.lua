@@ -1490,7 +1490,6 @@ function components.box(section, options, zindex)
     return box_types
 end
 
-fix it also showing the name below the slider not just in the middle no comments 
 function components.slider(holder, options, zindex)
     zindex = zindex or 11
 
