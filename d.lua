@@ -4476,9 +4476,9 @@ function library:Load(options)
         keybindlist = true,
         font = worldtoscreen ~= nil and "system" or "plex",
         fontsize = 13,
-        discord = "6wp393UeCc",
+        discord = "discord.gg/DdZjcuuZq8",
         sizex = 780,
-        sizey = 570
+        sizey = 600
     })
 
     options.font = options.font:lower()
