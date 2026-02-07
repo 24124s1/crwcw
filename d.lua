@@ -1490,6 +1490,7 @@ function components.box(section, options, zindex)
     return box_types
 end
 
+fix it also showing the name below the slider not just in the middle no comments 
 function components.slider(holder, options, zindex)
     zindex = zindex or 11
 
@@ -1543,7 +1544,7 @@ function components.slider(holder, options, zindex)
         Text = "",
         Font = library.font,
         Size = library.font_size,
-        Position = newUDim2(0.5, 0, 0.5, 0),
+        Position = newUDim2(0.5, 0, 0, -2),
         Theme = "Text",
         Center = true,
         ZIndex = zindex + 3
@@ -1567,6 +1568,7 @@ function components.slider(holder, options, zindex)
     local function slide(input)
         local sizeX = (input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X
         local value = clamp((options.max - options.min) * sizeX + options.min, options.min, options.max)
+
         set(value)
     end
 
