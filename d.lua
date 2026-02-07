@@ -4477,8 +4477,8 @@ function library:Load(options)
         font = worldtoscreen ~= nil and "system" or "plex",
         fontsize = 13,
         discord = "6wp393UeCc",
-        sizex = 700,
-        sizey = 550
+        sizex = 730,
+        sizey = 570
     })
 
     options.font = options.font:lower()
