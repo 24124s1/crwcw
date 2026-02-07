@@ -4313,7 +4313,7 @@ function library:Window(options)
 
 		function section_types:Slider(options)
             utility.format(options)
-            options.name = options.text or options.name or "slider"
+            options.name = options.name or "slider"
 
             local holder = {section = self}
 
