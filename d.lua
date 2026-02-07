@@ -1514,7 +1514,7 @@ function components.slider(holder, options, zindex)
     end
 
     local slider = holder.main:Create("Square", {
-        Size = newUDim2(1, 0, 0, 10),
+        Size = newUDim2(1, 0, 0, 20),
         Position = newUDim2(0, 0, 0, 0),
         ZIndex = zindex,
         Theme = "Object Background",
@@ -1549,9 +1549,19 @@ function components.slider(holder, options, zindex)
         ZIndex = zindex + 3
     })
 
+    local name_text = slider:Create("Text", {
+        Text = options.name,
+        Font = library.font,
+        Size = library.font_size,
+        Position = newUDim2(0, 0, 1, 2),
+        Theme = "Text",
+        Center = true,
+        ZIndex = zindex + 3
+    })
+
     local function set(value)
         value = clamp(utility.round(tonumber(value), options.float), options.min, options.max)
-        value_text.Text = options.name .. ": " .. utility.tostring(value) .. options.suffix
+        value_text.Text = utility.tostring(value) .. options.suffix
 
         if value ~= current_value then
             current_value = value
@@ -1590,7 +1600,7 @@ function components.slider(holder, options, zindex)
         end
     end)
 
-    holder.main.Size = newUDim2(1, 0, 0, 10)
+    holder.main.Size = newUDim2(1, 0, 0, 30)
     holder.section:Resize()
 
     local slider_types = {}
@@ -4478,7 +4488,7 @@ function library:Load(options)
         fontsize = 13,
         discord = "discord.gg/DdZjcuuZq8",
         sizex = 700,
-        sizey = 1000
+        sizey = 800
     })
 
     options.font = options.font:lower()
