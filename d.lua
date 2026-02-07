@@ -1514,7 +1514,7 @@ function components.slider(holder, options, zindex)
     end
 
     local slider = holder.main:Create("Square", {
-        Size = newUDim2(1, 0, 0, 20),
+        Size = newUDim2(1, 0, 0, 10),
         Position = newUDim2(0, 0, 0, 0),
         ZIndex = zindex,
         Theme = "Object Background",
@@ -1543,17 +1543,7 @@ function components.slider(holder, options, zindex)
         Text = "",
         Font = library.font,
         Size = library.font_size,
-        Position = newUDim2(0.5, 0, 0, -2),
-        Theme = "Text",
-        Center = true,
-        ZIndex = zindex + 3
-    })
-
-    local name_text = slider:Create("Text", {
-        Text = options.name,
-        Font = library.font,
-        Size = library.font_size,
-        Position = newUDim2(0, 0, 1, 2),
+        Position = newUDim2(0.5, 0, 0.5, 0),
         Theme = "Text",
         Center = true,
         ZIndex = zindex + 3
@@ -1561,7 +1551,7 @@ function components.slider(holder, options, zindex)
 
     local function set(value)
         value = clamp(utility.round(tonumber(value), options.float), options.min, options.max)
-        value_text.Text = utility.tostring(value) .. options.suffix
+        value_text.Text = options.name .. ": " .. utility.tostring(value) .. options.suffix
 
         if value ~= current_value then
             current_value = value
@@ -1577,7 +1567,6 @@ function components.slider(holder, options, zindex)
     local function slide(input)
         local sizeX = (input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X
         local value = clamp((options.max - options.min) * sizeX + options.min, options.min, options.max)
-
         set(value)
     end
 
@@ -1600,7 +1589,7 @@ function components.slider(holder, options, zindex)
         end
     end)
 
-    holder.main.Size = newUDim2(1, 0, 0, 30)
+    holder.main.Size = newUDim2(1, 0, 0, 10)
     holder.section:Resize()
 
     local slider_types = {}
