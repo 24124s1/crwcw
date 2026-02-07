@@ -4477,7 +4477,7 @@ function library:Load(options)
         font = worldtoscreen ~= nil and "system" or "plex",
         fontsize = 13,
         discord = "discord.gg/DdZjcuuZq8",
-        sizex = 1000,
+        sizex = 700,
         sizey = 1000
     })
 
