@@ -3595,51 +3595,16 @@ function library:List(options)
     return components.list(options)
 end
 
-function library:Playerlist(max_players)
-    local list = Render:Create("Square", {
-        Size = newUDim2(0, 400, 0, 406),
-        Position = newUDim2(0, self.holder.AbsolutePosition.X + self.window_x / 2 + 362, 0, self.holder.AbsolutePosition.Y),
+function library:ESPPreview()
+    local preview_window = Render:Create("Square", {
+        Size = newUDim2(0, 250, 0, 320),
+        Position = newUDim2(0, self.holder.AbsolutePosition.X + self.window_x + 20, 0, self.holder.AbsolutePosition.Y),
         ZIndex = 23,
         Theme = "Window Background",
         Outline = false,
     })
 
-    list:Create("Square", {
-        Size = newUDim2(1, 0, 1, -22),
-        Position = newUDim2(0, 0, 0, 22),
-        ZIndex = 24,
-        Theme = "Tab Background",
-        OutlineTheme = "Tab Border",
-    })
-
-    list:Create("Text", {
-        Text = "Playerlist",
-        Font = library.font,
-        Size = library.font_size,
-        Position = newUDim2(0, 6, 0, 4),
-        Theme = "Text",
-        ZIndex = 24
-    }, true)
-
-    local scroll_object = list:Create("Square", {
-        Size = newUDim2(1, 0, 1, 0),
-        Transparency = 0,
-        Outline = false,
-        Ignored = true,
-        ZIndex = 32
-    })
-
-    scroll_object.MouseEnter:Connect(function()
-        services.ContextActionService:BindAction("disable_mouse_input", function()
-            return Enum.ContextActionResult.Sink
-        end, false, Enum.UserInputType.MouseButton1, Enum.UserInputType.MouseButton2, Enum.UserInputType.MouseButton3, Enum.UserInputType.MouseWheel)
-    end)
-
-    scroll_object.MouseLeave:Connect(function()
-        services.ContextActionService:UnbindAction("disable_mouse_input")
-    end)
-
-    list:Create("Square", {
+    preview_window:Create("Square", {
         Size = newUDim2(1, 2, 1, 2),
         Position = newUDim2(0, -1, 0, -1),
         Theme = "Window Border",
@@ -3647,380 +3612,77 @@ function library:Playerlist(max_players)
         OutlineTheme = "Black Border"
     }, true)
 
+    preview_window:Create("Text", {
+        Text = "ESP Preview",
+        Font = library.font,
+        Size = library.font_size,
+        Position = newUDim2(0, 6, 0, 4),
+        Theme = "Text",
+        ZIndex = 24
+    }, true)
+
+    local viewport_bg = preview_window:Create("Square", {
+        Size = newUDim2(1, -12, 1, -34),
+        Position = newUDim2(0, 6, 0, 26),
+        Theme = "Tab Background",
+        OutlineTheme = "Tab Border",
+        ZIndex = 24,
+    })
+
+    local viewport = Instance.new("ViewportFrame")
+    viewport.Size = UDim2.new(1, -4, 1, -4)
+    viewport.Position = UDim2.new(0, 2, 0, 2)
+    viewport.BackgroundTransparency = 1
+    viewport.Parent = viewport_bg:GetRawObject()
+
+    local cam = Instance.new("Camera")
+    cam.FieldOfView = 50
+    viewport.CurrentCamera = cam
+    cam.Parent = viewport
+
     local drag_outline = Render:Create("Square", {
-        Size = newUDim2(0, 400, 0, 406),
+        Size = newUDim2(0, 250, 0, 320),
         Thickness = 1,
         Filled = false,
         Theme = "Accent",
         Visible = false,
-        Outline = false,
         ZIndex = 21,
     }, true)
 
-    library.drag_outlines[drag_outline] = true
+    utility.dragify(preview_window, drag_outline)
 
-    drag_outline:Create("Square", {
-        Size = newUDim2(1, 0, 1, 0),
-        Filled = false,
-        Theme = "Black Border",
-        ZIndex = 20,
-        Thickness = 2,
-        Outline = false
-    }, true)
-
-    utility.dragify(list, drag_outline)
-    
-    local holder = list:Create("Square", {
-        Size = newUDim2(1, -20, 1, -60),
-        Position = newUDim2(0, 6, 0, 28),
-        Transparency = 0,
-        Outline = false
-    })
-
-    holder:AddList(4)
-
-    local labels = {}
-    local current_scroll = 0
-    local players = {}
-    local player_data = {}
-    local current_player
-    local cutoff = 194
-    local scrolling = false
-    local tile_size = 18
-    local max_bars = floor((list.AbsoluteSize.Y + 94 - cutoff) / (tile_size + 4))
-    max_players = max_players - max_bars
-
-    local indicator_holder = list:Create("Square", {
-        Size = newUDim2(0, 4, 1, -126),
-        Position = newUDim2(1, -10, 0, 28),
-        Theme = "Tab Background",
-        Outline = false,
-        ZIndex = 30
-    })
-
-    local indicator = indicator_holder:Create("Square", {
-        ZIndex = 31,
-        Theme = "Accent",
-        Outline = false,
-        Ignored = true,
-        Size = newUDim2(1, 0, 1 / max_players, 0)
-    })
-
-    local card = list:Create("Square", {
-        ZIndex = 27,
-        Theme = "Section Background",
-        Position = newUDim2(0, 6, 1, -88),
-        OutlineTheme = "Section Border",
-        Size = newUDim2(1, -12, 0, 80)
-    })
-
-    local name = card:Create("Text", {
-        Text = "",
-        Font = library.font,
-        Size = library.font_size,
-        Center = false,
-        Position = newUDim2(0, 60, 0, 8),
-        Theme = "Text",
-        ZIndex = 28
-    })
-
-    local headshot_bg = card:Create("Square", {
-        ZIndex = 29,
-        Theme = "Object Background",
-        OutlineTheme = "Object Border",
-        Position = newUDim2(0, 6, 0, 6),
-        Size = newUDim2(0, 48, 0, 48)
-    })
-
-    local headshot = headshot_bg:Create("Image", {
-        ZIndex = 30,
-        Position = newUDim2(0, 2, 0, 2),
-        Size = newUDim2(1, -2, 1, -2)
-    })
-    
-    local fix = headshot_bg:Create("Square", {
-        ZIndex = 31,
-        Theme = "Object Background",
-        Outline = false,
-        Position = newUDim2(0, 0, 0, 1),
-        Size = newUDim2(1, 0, 0, 2)
-    })
-
-    local function update()
-        for plr, data in next, player_data do
-            local i = find(players, plr)
-            data.bar.Visible = ((i - current_scroll) * tile_size + (i - current_scroll - 1) * 4 + tile_size / 2 < (list.AbsoluteSize.Y + 94 - cutoff) and i > current_scroll)
+    local function setup_character()
+        local lp = services.Players.LocalPlayer
+        if not lp.Character then return end
+        
+        lp.Character.Archivable = true
+        local clone = lp.Character:Clone()
+        clone.Parent = viewport
+        
+        for _, v in next, clone:GetDescendants() do
+            if v:IsA("LuaSourceContainer") or v:IsA("Sound") then
+                v:Destroy()
+            elseif v:IsA("BasePart") then
+                v.CanCollide = false
+                v.Anchored = true
+            end
         end
-    end
 
-    local function handle_player()
-        local data = player_data[current_player]
-
-        name.Text = data and data.name or ""
-        headshot.Data = data and data.image or ""
-
-        for _, handler in next, labels do
-            handler(current_player)
-        end
-    end
-
-	local function create_card(plr)
-		if not player_data[plr].image then
-			current_player = plr
-			player_data[plr].name = plr.Name
-
-			spawn(function()
-				local imageUrl = ("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%s&size=60x60&format=Png&isCircular=false"):format(plr.UserId)
-				player_data[plr].image = imageUrl
-
-				if current_player == plr then
-					headshot.Data = imageUrl
-				end
-			end)
-		else
-			if current_player ~= plr then
-				current_player = plr
-			else
-				current_player = nil
-			end
-		end
-
-		handle_player()
-	end
-
-    local function create_player(plr)
-        if not self.unloaded then
-            local idx = #players + 1
-            players[idx] = plr
-
-            local bar = Render:Create("Square", {
-                ZIndex = 27,
-                Theme = "Section Background",
-                OutlineTheme = "Section Border",
-                Size = newUDim2(1, 0, 0, tile_size)
-            })
-
-            local bounds = bar:Create("Text", {
-                Text = plr.Name,
-                Font = library.font,
-                Size = library.font_size,
-                Center = false,
-                Position = newUDim2(0, 12, 0, 2),
-                Theme = "Text",
-                ZIndex = 28
-            }).TextBounds.X
-
-            player_data[plr] = {tags = {}, tag_size = bounds + 32, name = plr.Name, bar = bar}
-
-            -- parent after cuz my extension is goofy like that
-            bar.Parent = holder
-
-            update()
-
-            bar.MouseButton1Click:Connect(function()
-                create_card(plr)
+        local hrp = clone:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            cam.CFrame = CFrame.new(hrp.Position + (hrp.CFrame.LookVector * 8) + Vector3.new(0, 1.5, 0), hrp.Position)
+            
+            local rotation = 0
+            services.RunService.RenderStepped:Connect(function(dt)
+                if not preview_window.Visible then return end
+                rotation = rotation + (dt * 60)
+                hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, math.rad(rotation), 0)
             end)
         end
     end
 
-    local function remove_plr(plr)
-        local idx = find(players, plr)
-        remove(players, idx)
-
-        player_data[plr].bar:Destroy()
-        player_data[plr] = nil
-
-        --update the list cuz it doesnt update itself for some reason
-        holder.Position = holder.Position
-        update()
-    end
-
-    local function scroll(amount)
-        current_scroll = clamp(amount, 0, max_players)
-
-        if current_scroll > 0 then
-            holder.Position = newUDim2(0, 6, 0, current_scroll * -tile_size - ((current_scroll) * 4) + 28)
-        else
-            holder.Position = newUDim2(0, 6, 0, 28)
-        end
-
-        indicator.Position = newUDim2(0, 0, (1 / (max_players + 1)) * current_scroll)
-        update()
-    end
-
-    local function update_scroll(input)
-        local sizeY = clamp((input.Position.Y - indicator_holder.AbsolutePosition.Y + inset) / indicator_holder.AbsoluteSize.Y, 0, 1)
-        local value = round(clamp(max_players * sizeY, 0, max_players))
-
-        scroll(value)
-    end
-
-    indicator_holder.MouseButton1Down:Connect(function()
-        scrolling = true
-        update_scroll{Position = services.UserInputService:GetMouseLocation() - newVector2(0, 36)}
-    end)
-
-    self:Connect(services.UserInputService.InputChanged, function(input)
-        if scrolling and input.UserInputType == Enum.UserInputType.MouseMovement then
-            update_scroll(input)
-        end
-    end)
-
-    self:Connect(services.UserInputService.InputEnded, function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            scrolling = false
-        end
-    end)
-
-    scroll_object.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseWheel then
-            if input.Position.Z > 0 then
-                scroll(current_scroll - 1)
-            else
-                scroll(current_scroll + 1)
-            end
-        end
-    end)
-
-    self:Connect(services.Players.PlayerRemoving, remove_plr)
-    self:Connect(services.Players.PlayerAdded, create_player)
-
-    for _, plr in next, services.Players:GetChildren() do
-        create_player(plr)
-    end
-
-    self.Playerlist = {button_size = 0, labels = 0, object = list, toggled = true}
-
-    function library.Playerlist:Button(options)
-        utility.format(options)
-
-        utility.defaults(options, {
-            name = "button",
-            callback = function() end
-        })
-
-        local button = card:Create("Square", {
-            ZIndex = 29,
-            Theme = "Object Background",
-            OutlineTheme = "Object Border"
-        })
-    
-        if options.tooltip then
-            components.tooltip(button, options.tooltip)
-        end
-    
-        utility.auto_button_color(button, "Object Background", fromRGB(3, 3, 3), fromRGB(8, 8, 8))
-    
-        local text = button:Create("Text", {
-            Text = options.name,
-            Font = library.font,
-            Size = library.font_size,
-            Position = newUDim2(0.5, 0, 0, 1),
-            Theme = "Text",
-            Center = true,
-            ZIndex = 30
-        })
-
-        self.button_size += text.TextBounds.X + 38
-        button.Size = newUDim2(0, text.TextBounds.X + 32, 0, 15)
-        button.Position = newUDim2(1, -self.button_size, 1, -21)
-
-        button.MouseButton1Click:Connect(function()
-            options.callback(self, current_player)
-        end)
-    end
-
-    function library.Playerlist:Label(options)
-        utility.format(options)
-
-        utility.defaults(options, {
-            name = "User ID: ",
-            handler = function(plr)
-                return plr.UserId
-            end
-        })
-
-        local label = card:Create("Text", {
-            Font = library.font,
-            Size = library.font_size,
-            Center = false,
-            Position = newUDim2(0, 60, 0, 24 + (self.labels * 14)),
-            Theme = "Text",
-            ZIndex = 28
-        })
-
-        local function handle(plr)
-            if plr then
-                label.Visible = true
-
-                local text, color = options.handler(plr)
-                label.Text = options.name .. text
-                
-                if color then
-                    library:ChangeThemeObject(label, nil)
-                    label.Color = color
-                else
-                    library:ChangeThemeObject(label, "Text")
-                end
-            else
-                label.Visible = false
-            end
-        end
-
-        labels[#labels + 1] = handle
-        handle(current_player)
-
-        self.labels += 1
-    end
-
-    function library.Playerlist:Tag(options)
-        utility.format(options)
-
-        utility.defaults(options, {
-            player = services.Players.LocalPlayer,
-            text = "PRIORITIZED",
-            color = fromRGB(255, 0, 0)
-        })
-
-        local data = player_data[options.player]
-        
-        local tag = data.bar:Create("Text", {
-            Text = options.text,
-            Font = library.font,
-            Size = library.font_size,
-            Center = false,
-            Position = newUDim2(0, data.tag_size, 0, 2),
-            Color = options.color,
-            ZIndex = 28
-        })
-
-        data.tag_size += tag.TextBounds.X + 8
-        data.tags[options.text] = tag
-    end
-
-    function library.Playerlist:RemoveTag(player, text)
-        local data = player_data[player]
-        local tag = data.tags[text]
-
-        if tag then
-            data.tag_size -= tag.TextBounds.X + 8
-            data.tags[text] = nil
-
-            for _, object in next, data.tags do
-                if object.Position.X.Offset > tag.Position.X.Offset then
-                    object.Position -= newUDim2(0, tag.TextBounds.X + 8, 0, 0)
-                end
-            end
-
-            tag:Destroy()
-        end
-    end
-
-    function library.Playerlist:IsTagged(player, tag)
-        return player_data[player].tags[tag]
-    end
-
-    utility.format(library.Playerlist, true)
+    setup_character()
+    self.ESPPreview = { object = preview_window, toggled = true }
 end
 
 function library:Window(options)
@@ -4470,8 +4132,7 @@ function library:Load(options)
         notificationyalignment = "bottom",
         watermarkxalignment = "left",
         watermarkyalignment = "top",
-        playerlist = false,
-        playerlistmax = options.maxplayers or 32,
+        esppreview = true,
         performancedrag = true,
         keybindlist = true,
         font = worldtoscreen ~= nil and "system" or "plex",
@@ -4522,8 +4183,8 @@ function library:Load(options)
         Transparency = 0
     })
 
-    if options.playerlist then
-        self:Playerlist(options.playerlistmax)
+    if options.esppreview then
+        self:esppreview()
     end
 
     self.title_bounds = self.holder:Create("Text", {
@@ -5301,14 +4962,14 @@ function library:Load(options)
         }
 
         misc:Toggle{
-            name = "Show Player List",
-            default = library.keybind_list_default,
-            flag = "player_list",
+            name = "Show ESP Preview",
+            default = options.esppreview,
+            flag = "esp_preview",
             callback = function(value)
-                library.Playerlist.toggled = value
+                library.ESPPreview.toggled = value
 
                 if library.open then
-                    library.Playerlist.object.Visible = value
+                    library.ESPPreview.object.Visible = value
                 end
             end
         }
@@ -5437,7 +5098,7 @@ function library:Load(options)
 end
 
 
---[[local window = library:Load{playerlist = true}
+--[[local window = library:Load{esppreview = true}
 
 library.Playerlist:button{name = "Prioritize", callback = function(list, plr)
     if not list:IsTagged(plr, "Prioritized") then
