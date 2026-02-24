@@ -3633,7 +3633,9 @@ function library:ESPPreview()
     viewport.Size = UDim2.new(1, -4, 1, -4)
     viewport.Position = UDim2.new(0, 2, 0, 2)
     viewport.BackgroundTransparency = 1
-    viewport.Parent = viewport_bg:GetRawObject()
+    
+    local parent_obj = (viewport_bg.GetRawObject and viewport_bg:GetRawObject()) or viewport_bg.object or viewport_bg.main or viewport_bg.instance
+    viewport.Parent = parent_obj
 
     local cam = Instance.new("Camera")
     cam.FieldOfView = 50
