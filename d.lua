@@ -2779,8 +2779,8 @@ function library:Unload(fade)
         self.watermark:Destroy()
     end
 
-    if (self.Playerlist) then
-        self.Playerlist.object:Destroy()
+    if (self.esppreview) then
+        self.esppreview.object:Destroy()
     end
 
     for list, _ in next, library.lists do
@@ -2803,7 +2803,7 @@ end
 function library:Toggle()
     if not self.opening then
         self.opening = true
-        self.Playerlist.object.Visible = self.Playerlist.toggled and not self.open or false
+        self.esppreview.object.Visible = self.esppreview.toggled and not self.open or false
 
         for window, types in next, library.windows do
             window.Visible = types.Visible and not self.open or false;
@@ -5103,7 +5103,7 @@ end
 
 --[[local window = library:Load{esppreview = true}
 
-library.Playerlist:button{name = "Prioritize", callback = function(list, plr)
+library.esppreview:button{name = "Prioritize", callback = function(list, plr)
     if not list:IsTagged(plr, "Prioritized") then
         list:Tag{player = plr, text = "Prioritized", color = fromRGB(255, 0, 0)}
     else
@@ -5111,19 +5111,19 @@ library.Playerlist:button{name = "Prioritize", callback = function(list, plr)
     end
 end}
 
-library.Playerlist:button{name = "Ignore", callback = function(list, plr)
-    if not library.Playerlist:IsTagged(plr, "Ignored") then
-        library.Playerlist:Tag{player = plr, text = "Ignored", Color = fromRGB(120, 120, 120)}
+library.esppreview:button{name = "Ignore", callback = function(list, plr)
+    if not library.esppreview:IsTagged(plr, "Ignored") then
+        library.esppreview:Tag{player = plr, text = "Ignored", Color = fromRGB(120, 120, 120)}
     else
-        library.Playerlist:RemoveTag(plr, "Ignored")
+        library.esppreview:RemoveTag(plr, "Ignored")
     end
 end}
 
-library.Playerlist:Label{name = "Rank: ", handler = function(plr)
+library.esppreview:Label{name = "Rank: ", handler = function(plr)
     return "1e+9"
 end}
 
-library.Playerlist:Label{name = "Team: ", handler = function(plr)
+library.esppreview:Label{name = "Team: ", handler = function(plr)
     return "Ghosts", fromRGB(209, 118, 0)
 end}
 
