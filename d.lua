@@ -3633,14 +3633,12 @@ function library:ESPPreview()
     viewport.Size = UDim2.new(1, -4, 1, -4)
     viewport.Position = UDim2.new(0, 2, 0, 2)
     viewport.BackgroundTransparency = 1
-    
-    local parent_obj = (viewport_bg.GetRawObject and viewport_bg:GetRawObject()) or viewport_bg.object or viewport_bg.main or viewport_bg.instance
-    viewport.Parent = parent_obj
+    viewport.Parent = viewport_bg.object
 
     local cam = Instance.new("Camera")
     cam.FieldOfView = 50
-    viewport.CurrentCamera = cam
     cam.Parent = viewport
+    viewport.CurrentCamera = cam
 
     local drag_outline = Render:Create("Square", {
         Size = newUDim2(0, 250, 0, 320),
@@ -3656,11 +3654,11 @@ function library:ESPPreview()
     local function setup_character()
         local lp = services.Players.LocalPlayer
         if not lp.Character then return end
-        
+
         lp.Character.Archivable = true
         local clone = lp.Character:Clone()
         clone.Parent = viewport
-        
+
         for _, v in next, clone:GetDescendants() do
             if v:IsA("LuaSourceContainer") or v:IsA("Sound") then
                 v:Destroy()
@@ -3672,8 +3670,11 @@ function library:ESPPreview()
 
         local hrp = clone:FindFirstChild("HumanoidRootPart")
         if hrp then
-            cam.CFrame = CFrame.new(hrp.Position + (hrp.CFrame.LookVector * 8) + Vector3.new(0, 1.5, 0), hrp.Position)
-            
+            cam.CFrame = CFrame.new(
+                hrp.Position + (hrp.CFrame.LookVector * 8) + Vector3.new(0, 1.5, 0),
+                hrp.Position
+            )
+
             local rotation = 0
             services.RunService.RenderStepped:Connect(function(dt)
                 if not preview_window.Visible then return end
