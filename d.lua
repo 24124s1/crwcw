@@ -3151,202 +3151,194 @@ function library:Loader(options)
     utility.defaults(options, {
         title = "Iridescent",
         description = "Loading...",
-        percentage = 50,
-        date = "16/01/22",
+        percentage = 0,
         added = {},
         changed = {},
         removed = {},
         keySystem = false,
-        keyCallback = function() end,
+        keyCallback = function() return true end,
         callback = function() end
     })
 
-    local sizeX, sizeY = 310, options.keySystem and 150 or 123
-    local isKeyEntered = false
+    local sizeX = 310
+    local sizeY = 123
 
-    local window = Render:Create("Square", {
-        Size = newUDim2(0, sizeX, 0, 22),
-        Position = utility.center(sizeX, sizeY),
-        ZIndex = 140,
-        Visible = true
-    })
-
-    window:Create("Text", {
-        Text = options.title,
-        Font = self.font,
-        Size = self.font_size,
-        Position = newUDim2(0, 6, 0, 4),
-        Theme = "Text",
-        ZIndex = 141
-    })
-
-    local main = window:Create("Square", {
-        Size = newUDim2(1, 0, 0, sizeY),
-        ZIndex = 139,
-        Theme = "Window Background"
-    })
-
-    main:Create("Square", {
-        Size = newUDim2(1, 2, 1, 2),
-        Position = newUDim2(0, -1, 0, -1),
-        Theme = "Window Border",
-        ZIndex = 138,
-        OutlineTheme = "Black Border"
-    })
-
-    local background = main:Create("Square", {
-        Size = newUDim2(1, 0, 1, -22),
-        Position = newUDim2(0, 0, 0, 22),
-        ZIndex = 142,
-        Theme = "Tab Background",
-        OutlineTheme = "Tab Border"
-    })
-
-    local holder = background:Create("Square", {
-        Size = newUDim2(1, -12, 1, -12),
-        Position = newUDim2(0, 6, 0, 6),
-        Transparency = 0
-    })
-
-    local description_text = holder:Create("Text", {
-        Text = options.description,
-        Font = self.font,
-        Size = self.font_size,
-        Position = newUDim2(0.5, -utility.text_length(options.description, self.font, self.font_size).X * 0.5, 0, 2.5),
-        Theme = "Text",
-        ZIndex = 143
-    })
-
-    local slider = holder:Create("Square", {
-        Size = newUDim2(1, 0, 0, 10),
-        Position = newUDim2(0, 0, 0, 25),
-        ZIndex = 143,
-        Theme = "Object Background",
-        OutlineTheme = "Object Border"
-    })
-
-    local fill = slider:Create("Square", {
-        Size = newUDim2(options.percentage * 0.01, 0, 1, 0),
-        ZIndex = 144,
-        Theme = "Accent"
-    })
-
-    local keyBox, submitButton
-    if options.keySystem then
-        keyBox = holder:Create("TextBox", {
-            Text = "",
-            PlaceholderText = "Enter Key...",
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0, 6, 0, 42),
-            SizeConstraint = newUDim2(1, -12, 1, 0),
-            Theme = "Text",
-            ZIndex = 144
+    local function createWindow(height)
+        local window = Render:Create("Square", {
+            Size = newUDim2(0, sizeX, 0, 22),
+            Position = utility.center(sizeX, height),
+            ZIndex = 140,
+            Visible = true
         })
 
-        submitButton = holder:Create("Square", {
-            Position = newUDim2(0.5, -50, 0, 70),
-            Size = newUDim2(0.5, 0, 0, 20),
-            ZIndex = 143,
+        window:Create("Text", {
+            Text = options.title,
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0, 6, 0, 4),
+            Theme = "Text",
+            ZIndex = 141
+        })
+
+        local main = window:Create("Square", {
+            Size = newUDim2(1, 0, 0, height),
+            ZIndex = 139,
+            Theme = "Window Background"
+        })
+
+        main:Create("Square", {
+            Size = newUDim2(1, 2, 1, 2),
+            Position = newUDim2(0, -1, 0, -1),
+            Theme = "Window Border",
+            ZIndex = 138,
+            OutlineTheme = "Black Border"
+        })
+
+        return window, main
+    end
+
+    local loader_types = {}
+    local window, main
+
+    local function buildRealLoader()
+        window:Destroy()
+        window, main = createWindow(sizeY)
+
+        local holder = main:Create("Square", {
+            Size = newUDim2(1, -12, 1, -34),
+            Position = newUDim2(0, 6, 0, 28),
+            Transparency = 0
+        })
+
+        local desc = holder:Create("Text", {
+            Text = options.description,
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0.5, 0, 0, 2),
+            Center = true,
+            Theme = "Text",
+            ZIndex = 143
+        })
+
+        local slider = holder:Create("Square", {
+            Size = newUDim2(1, 0, 0, 10),
+            Position = newUDim2(0, 0, 0, 25),
             Theme = "Object Background",
             OutlineTheme = "Object Border"
         })
 
-        submitButton:Create("Text", {
+        local fill = slider:Create("Square", {
+            Size = newUDim2(0, 0, 1, 0),
+            Theme = "Accent"
+        })
+
+        local load = holder:Create("Square", {
+            Position = newUDim2(0, 0, 0, 42),
+            Size = newUDim2(0.5, -4, 0, 20),
+            Theme = "Object Background",
+            OutlineTheme = "Object Border"
+        })
+
+        utility.auto_button_color(load, "Object Background", fromRGB(3,3,3), fromRGB(8,8,8))
+
+        load:Create("Text", {
+            Text = "Load",
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0.5, 0, 0, 3),
+            Center = true,
+            Theme = "Text"
+        })
+
+        local close = holder:Create("Square", {
+            Position = newUDim2(0.5, 4, 0, 42),
+            Size = newUDim2(0.5, -4, 0, 20),
+            Theme = "Object Background",
+            OutlineTheme = "Object Border"
+        })
+
+        utility.auto_button_color(close, "Object Background", fromRGB(3,3,3), fromRGB(8,8,8))
+
+        close:Create("Text", {
+            Text = "Close",
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0.5, 0, 0, 3),
+            Center = true,
+            Theme = "Text"
+        })
+
+        function loader_types:Set(text, percent)
+            desc.Text = text
+            fill.Size = newUDim2(percent * 0.01, 0, 1, 0)
+        end
+
+        function loader_types:Close()
+            window:Destroy()
+        end
+
+        load.MouseButton1Click:Connect(options.callback)
+        close.MouseButton1Click:Connect(function()
+            loader_types:Close()
+        end)
+    end
+
+    if options.keySystem then
+        window, main = createWindow(120)
+
+        local holder = main:Create("Square", {
+            Size = newUDim2(1, -12, 1, -34),
+            Position = newUDim2(0, 6, 0, 28)
+        })
+
+        holder:Create("Text", {
+            Text = "Enter Key",
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0.5, 0, 0, 2),
+            Center = true,
+            Theme = "Text"
+        })
+
+        local box = holder:Create("TextBox", {
+            Text = "",
+            PlaceholderText = "Enter key here...",
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0, 0, 0, 22),
+            Size = newUDim2(1, 0, 0, 20),
+            Theme = "Text"
+        })
+
+        local submit = holder:Create("Square", {
+            Position = newUDim2(0, 0, 0, 50),
+            Size = newUDim2(1, 0, 0, 20),
+            Theme = "Object Background",
+            OutlineTheme = "Object Border"
+        })
+
+        utility.auto_button_color(submit, "Object Background", fromRGB(3,3,3), fromRGB(8,8,8))
+
+        submit:Create("Text", {
             Text = "Submit",
             Font = self.font,
             Size = self.font_size,
             Position = newUDim2(0.5, 0, 0, 3),
-            Theme = "Text",
             Center = true,
-            ZIndex = 144
+            Theme = "Text"
         })
 
-        submitButton.MouseButton1Click:Connect(function()
-            local enteredKey = keyBox.Text
-            if enteredKey ~= "" then
-                options.keyCallback(enteredKey)
-                isKeyEntered = true
-                window:Create("Square", {
-                    Size = newUDim2(0, sizeX, 0, 22),
-                    Position = utility.center(sizeX, 123),
-                    ZIndex = 140,
-                    Visible = true
-                })
-                window:Destroy()
-                library:Loader(options) 
+        submit.MouseButton1Click:Connect(function()
+            if options.keyCallback(box.Text) ~= false then
+                buildRealLoader()
             end
         end)
+
+    else
+        window, main = createWindow(sizeY)
+        buildRealLoader()
     end
 
-    local load = holder:Create("Square", {
-        Position = newUDim2(0, 0, 0, options.keySystem and 100 or 42),
-        Size = newUDim2(0.5, -4, 0, 20),
-        ZIndex = 143,
-        Theme = "Object Background",
-        OutlineTheme = "Object Border"
-    })
-
-    utility.auto_button_color(load, "Object Background", fromRGB(3,3,3), fromRGB(8,8,8))
-
-    load:Create("Text", {
-        Text = options.keySystem and "Enter Key First" or "Load",
-        Font = self.font,
-        Size = self.font_size,
-        Position = newUDim2(0.5, 0, 0, 3),
-        Theme = "Text",
-        Center = true,
-        ZIndex = 144
-    })
-
-    local close = holder:Create("Square", {
-        Position = newUDim2(0.5, 4, 0, options.keySystem and 100 or 42),
-        Size = newUDim2(0.5, -4, 0, 20),
-        ZIndex = 143,
-        Theme = "Object Background",
-        OutlineTheme = "Object Border"
-    })
-
-    utility.auto_button_color(close, "Object Background", fromRGB(3,3,3), fromRGB(8,8,8))
-
-    close:Create("Text", {
-        Text = "Close",
-        Font = self.font,
-        Size = self.font_size,
-        Position = newUDim2(0.5, 0, 0, 3),
-        Theme = "Text",
-        Center = true,
-        ZIndex = 144
-    })
-
-    local loader_types = {}
-
-    function loader_types:Set(description, percentage)
-        local bounds = utility.text_length(description, library.font, library.font_size)
-        description_text.Text = description
-        description_text.Position = newUDim2(0.5, -bounds.X * 0.5, 0, 2.5)
-        fill.Size = newUDim2(percentage * 0.01, 0, 1, 0)
-    end
-
-    function loader_types:Close()
-        window:Destroy()
-    end
-
-    load.MouseButton1Click:Connect(function()
-        if not isKeyEntered then
-            if options.keySystem then
-                submitButton.Visible = true  
-            end
-        else
-            options.callback() 
-        end
-    end)
-
-    close.MouseButton1Click:Connect(function()
-        loader_types:Close()
-    end)
-
-    utility.format(loader_types, true)
     return loader_types
 end
 
