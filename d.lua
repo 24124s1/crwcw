@@ -3146,7 +3146,7 @@ function library:DeleteTheme(name)
 end
 
 function library:Loader(options)
-    utility.format(options);
+    utility.format(options)
 
     utility.defaults(options, {
         title = "Iridescent",
@@ -3156,20 +3156,20 @@ function library:Loader(options)
         added = {},
         changed = {},
         removed = {},
-        callback = function() end,
-    });
+        keySystem = false,
+        keyCallback = function() end,
+        callback = function() end
+    })
 
-    local sizeX = 310;
-    local sizeY = 123;
+    local sizeX, sizeY = 310, options.keySystem and 150 or 123
+    local isKeyEntered = false
 
     local window = Render:Create("Square", {
         Size = newUDim2(0, sizeX, 0, 22),
         Position = utility.center(sizeX, sizeY),
         ZIndex = 140,
-        Outline = false,
-        Visible = true,
-        Transparency = 0
-    });
+        Visible = true
+    })
 
     window:Create("Text", {
         Text = options.title,
@@ -3177,166 +3177,137 @@ function library:Loader(options)
         Size = self.font_size,
         Position = newUDim2(0, 6, 0, 4),
         Theme = "Text",
-        ZIndex = 124
-    });
+        ZIndex = 141
+    })
 
     local main = window:Create("Square", {
         Size = newUDim2(1, 0, 0, sizeY),
-        ZIndex = 123,
-        Theme = "Window Background",
-        Outline = false
-    });
+        ZIndex = 139,
+        Theme = "Window Background"
+    })
 
     main:Create("Square", {
         Size = newUDim2(1, 2, 1, 2),
         Position = newUDim2(0, -1, 0, -1),
         Theme = "Window Border",
-        ZIndex = 122,
+        ZIndex = 138,
         OutlineTheme = "Black Border"
-    });
+    })
 
     local background = main:Create("Square", {
         Size = newUDim2(1, 0, 1, -22),
         Position = newUDim2(0, 0, 0, 22),
-        ZIndex = 125,
+        ZIndex = 142,
         Theme = "Tab Background",
         OutlineTheme = "Tab Border"
-    });
+    })
 
     local holder = background:Create("Square", {
         Size = newUDim2(1, -12, 1, -12),
         Position = newUDim2(0, 6, 0, 6),
-        Transparency = 0,
-        Visible = true,
-        Outline = false
-    });
-
-    local change_log = holder:Create("Square", {
-        Visible = false,
-        Size = newUDim2(1, 0, 0, 0),
-        Position = newUDim2(0, 0, 0, 97),
-        ZIndex = 128,
-        Theme = "Tab Background",
-        Outline = false
-    });
-
-    change_log:Create("Square", {
-        Size = newUDim2(1, 2, 1, 2),
-        Position = newUDim2(0, -1, 0, -1),
-        Theme = "Tab Border",
-        ZIndex = 127,
-        OutlineTheme = "Black Border"
-    });
-
-    change_log:Create("Text", {
-        Text = "Changelog - Last Update: " .. options.date,
-        Font = self.font,
-        Size = self.font_size,
-        Position = newUDim2(0, 6, 0, 4),
-        Theme = "Text",
-        ZIndex = 129
-    });
-
-    local bound_addition = 0;
-
-    for _, text in next, options.added do
-        bound_addition += change_log:Create("Text", {
-            Text = "+ " .. text,
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0, 6, 0, 20 + bound_addition),
-            Color = newColor3(0.46, 1, 0.69),
-            ZIndex = 129
-        }).TextBounds.Y;
-    end
-
-    for _, text in next, options.changed do
-        bound_addition += change_log:Create("Text", {
-            Text = "* " .. text,
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0, 6, 0, 20 + bound_addition),
-            Theme = "Disabled Text",
-            ZIndex = 129
-        }).TextBounds.Y;
-    end
-
-    for _, text in next, options.removed do
-        bound_addition += change_log:Create("Text", {
-            Text = "- " .. text,
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0, 6, 0, 20 + bound_addition),
-            Color = newColor3(1, 0.258823, 0.258823),
-            ZIndex = 129
-        }).TextBounds.Y;
-    end
-
-    change_log.Size = newUDim2(1, 0, 0, bound_addition + 26);
-
-    local textbounds = utility.text_length(options.description, self.font, self.font_size);
+        Transparency = 0
+    })
 
     local description_text = holder:Create("Text", {
         Text = options.description,
         Font = self.font,
         Size = self.font_size,
-        Position = newUDim2(0.5, -textbounds.X * 0.5, 0, 2.5),
+        Position = newUDim2(0.5, -utility.text_length(options.description, self.font, self.font_size).X * 0.5, 0, 2.5),
         Theme = "Text",
-        ZIndex = 126
-    });
+        ZIndex = 143
+    })
 
     local slider = holder:Create("Square", {
         Size = newUDim2(1, 0, 0, 10),
         Position = newUDim2(0, 0, 0, 25),
-        ZIndex = 126,
+        ZIndex = 143,
         Theme = "Object Background",
         OutlineTheme = "Object Border"
-    });
+    })
 
     local fill = slider:Create("Square", {
         Size = newUDim2(options.percentage * 0.01, 0, 1, 0),
-        ZIndex = 127,
-        Ignored = true,
-        Theme = "Accent",
-        Outline = false
-    });
-
-    fill:Create("Image", {
-        Size = newUDim2(1, 0, 1, 0),
-        Transparency = 0.5,
-        ZIndex = 128,
-        Data = decode("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABuSURBVChTxY9BDoAgDASLGD2ReOYNPsR/+BAfroI7hibe9OYmky2wbUPIOdsXdc1f9WMwppQm+SDGBnUvomAQBH49qzhFEag25869ElzaIXDhD4JGbyoEVxUedN8FKwnfmwhucgKICc+pNB1mZhdCdhsa2ky0FAAAAABJRU5ErkJggg==")
+        ZIndex = 144,
+        Theme = "Accent"
     })
 
+    local keyBox, submitButton
+    if options.keySystem then
+        keyBox = holder:Create("TextBox", {
+            Text = "",
+            PlaceholderText = "Enter Key...",
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0, 6, 0, 42),
+            SizeConstraint = newUDim2(1, -12, 1, 0),
+            Theme = "Text",
+            ZIndex = 144
+        })
+
+        submitButton = holder:Create("Square", {
+            Position = newUDim2(0.5, -50, 0, 70),
+            Size = newUDim2(0.5, 0, 0, 20),
+            ZIndex = 143,
+            Theme = "Object Background",
+            OutlineTheme = "Object Border"
+        })
+
+        submitButton:Create("Text", {
+            Text = "Submit",
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0.5, 0, 0, 3),
+            Theme = "Text",
+            Center = true,
+            ZIndex = 144
+        })
+
+        submitButton.MouseButton1Click:Connect(function()
+            local enteredKey = keyBox.Text
+            if enteredKey ~= "" then
+                options.keyCallback(enteredKey)
+                isKeyEntered = true
+                window:Create("Square", {
+                    Size = newUDim2(0, sizeX, 0, 22),
+                    Position = utility.center(sizeX, 123),
+                    ZIndex = 140,
+                    Visible = true
+                })
+                window:Destroy()
+                library:Loader(options) 
+            end
+        end)
+    end
+
     local load = holder:Create("Square", {
-        Position = newUDim2(0, 0, 0, 42),
+        Position = newUDim2(0, 0, 0, options.keySystem and 100 or 42),
         Size = newUDim2(0.5, -4, 0, 20),
-        ZIndex = 126,
+        ZIndex = 143,
         Theme = "Object Background",
         OutlineTheme = "Object Border"
-    });
+    })
 
-    utility.auto_button_color(load, "Object Background", fromRGB(3, 3, 3), fromRGB(8, 8, 8))
+    utility.auto_button_color(load, "Object Background", fromRGB(3,3,3), fromRGB(8,8,8))
 
     load:Create("Text", {
-        Text = "Load",
+        Text = options.keySystem and "Enter Key First" or "Load",
         Font = self.font,
         Size = self.font_size,
         Position = newUDim2(0.5, 0, 0, 3),
         Theme = "Text",
         Center = true,
-        ZIndex = 127
-    });
+        ZIndex = 144
+    })
 
     local close = holder:Create("Square", {
-        Position = newUDim2(0.5, 4, 0, 42),
+        Position = newUDim2(0.5, 4, 0, options.keySystem and 100 or 42),
         Size = newUDim2(0.5, -4, 0, 20),
-        ZIndex = 126,
+        ZIndex = 143,
         Theme = "Object Background",
         OutlineTheme = "Object Border"
-    });
+    })
 
-    utility.auto_button_color(close, "Object Background", fromRGB(3, 3, 3), fromRGB(8, 8, 8))
+    utility.auto_button_color(close, "Object Background", fromRGB(3,3,3), fromRGB(8,8,8))
 
     close:Create("Text", {
         Text = "Close",
@@ -3345,63 +3316,38 @@ function library:Loader(options)
         Position = newUDim2(0.5, 0, 0, 3),
         Theme = "Text",
         Center = true,
-        ZIndex = 127
-    });
+        ZIndex = 144
+    })
 
-    local changelog = holder:Create("Square", {
-        Position = newUDim2(0, 0, 0, 69),
-        Size = newUDim2(1, 0, 0, 20),
-        ZIndex = 126,
-        Theme = "Object Background",
-        OutlineTheme = "Object Border"
-    });
-
-    utility.auto_button_color(changelog, "Object Background", fromRGB(3, 3, 3), fromRGB(8, 8, 8))
-
-    changelog:Create("Text", {
-        Text = "Changelog",
-        Font = self.font,
-        Size = self.font_size,
-        Position = newUDim2(0.5, 0, 0, 3),
-        Theme = "Text",
-        Center = true,
-        ZIndex = 127
-    });
-
-    local function resize()
-        main.Size = newUDim2(1, 0, 0, sizeY + (change_log.Visible and 34 + bound_addition or 0));
-        window.Position = utility.center(window.AbsoluteSize.X, main.AbsoluteSize.Y);
-    end
-
-    load.MouseButton1Click:Connect(options.callback);
-
-    changelog.MouseButton1Click:Connect(function()
-        change_log.Visible = not change_log.Visible;
-        resize();
-    end);
-
-    resize();
-
-    local loader_types = {};
+    local loader_types = {}
 
     function loader_types:Set(description, percentage)
-        local textbounds = utility.text_length(description, library.font, library.font_size);
-        description_text.Text = description;
-        description_text.Position = newUDim2(0.5, -textbounds.X * 0.5, 0, 2.5);
-
-        fill.Size = newUDim2(percentage * 0.01, 0, 1, 0);
+        local bounds = utility.text_length(description, library.font, library.font_size)
+        description_text.Text = description
+        description_text.Position = newUDim2(0.5, -bounds.X * 0.5, 0, 2.5)
+        fill.Size = newUDim2(percentage * 0.01, 0, 1, 0)
     end
 
     function loader_types:Close()
-        window:Destroy();
+        window:Destroy()
     end
 
-    close.MouseButton1Click:Connect(function()
-        loader_types:Close();
-    end);
+    load.MouseButton1Click:Connect(function()
+        if not isKeyEntered then
+            if options.keySystem then
+                submitButton.Visible = true  
+            end
+        else
+            options.callback() 
+        end
+    end)
 
-    utility.format(loader_types, true);
-    return loader_types;
+    close.MouseButton1Click:Connect(function()
+        loader_types:Close()
+    end)
+
+    utility.format(loader_types, true)
+    return loader_types
 end
 
 local left = library.notification_x == "left"
