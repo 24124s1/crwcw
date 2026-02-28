@@ -3146,200 +3146,262 @@ function library:DeleteTheme(name)
 end
 
 function library:Loader(options)
-    utility.format(options)
+    utility.format(options);
 
     utility.defaults(options, {
         title = "Iridescent",
         description = "Loading...",
-        percentage = 0,
+        percentage = 50,
+        date = "16/01/22",
         added = {},
         changed = {},
         removed = {},
-        keySystem = false,
-        keyCallback = function() return true end,
-        callback = function() end
+        callback = function() end,
+    });
+
+    local sizeX = 310;
+    local sizeY = 123;
+
+    local window = Render:Create("Square", {
+        Size = newUDim2(0, sizeX, 0, 22),
+        Position = utility.center(sizeX, sizeY),
+        ZIndex = 140,
+        Outline = false,
+        Visible = true,
+        Transparency = 0
+    });
+
+    window:Create("Text", {
+        Text = options.title,
+        Font = self.font,
+        Size = self.font_size,
+        Position = newUDim2(0, 6, 0, 4),
+        Theme = "Text",
+        ZIndex = 124
+    });
+
+    local main = window:Create("Square", {
+        Size = newUDim2(1, 0, 0, sizeY),
+        ZIndex = 123,
+        Theme = "Window Background",
+        Outline = false
+    });
+
+    main:Create("Square", {
+        Size = newUDim2(1, 2, 1, 2),
+        Position = newUDim2(0, -1, 0, -1),
+        Theme = "Window Border",
+        ZIndex = 122,
+        OutlineTheme = "Black Border"
+    });
+
+    local background = main:Create("Square", {
+        Size = newUDim2(1, 0, 1, -22),
+        Position = newUDim2(0, 0, 0, 22),
+        ZIndex = 125,
+        Theme = "Tab Background",
+        OutlineTheme = "Tab Border"
+    });
+
+    local holder = background:Create("Square", {
+        Size = newUDim2(1, -12, 1, -12),
+        Position = newUDim2(0, 6, 0, 6),
+        Transparency = 0,
+        Visible = true,
+        Outline = false
+    });
+
+    local change_log = holder:Create("Square", {
+        Visible = false,
+        Size = newUDim2(1, 0, 0, 0),
+        Position = newUDim2(0, 0, 0, 97),
+        ZIndex = 128,
+        Theme = "Tab Background",
+        Outline = false
+    });
+
+    change_log:Create("Square", {
+        Size = newUDim2(1, 2, 1, 2),
+        Position = newUDim2(0, -1, 0, -1),
+        Theme = "Tab Border",
+        ZIndex = 127,
+        OutlineTheme = "Black Border"
+    });
+
+    change_log:Create("Text", {
+        Text = "Changelog - Last Update: " .. options.date,
+        Font = self.font,
+        Size = self.font_size,
+        Position = newUDim2(0, 6, 0, 4),
+        Theme = "Text",
+        ZIndex = 129
+    });
+
+    local bound_addition = 0;
+
+    for _, text in next, options.added do
+        bound_addition += change_log:Create("Text", {
+            Text = "+ " .. text,
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0, 6, 0, 20 + bound_addition),
+            Color = newColor3(0.46, 1, 0.69),
+            ZIndex = 129
+        }).TextBounds.Y;
+    end
+
+    for _, text in next, options.changed do
+        bound_addition += change_log:Create("Text", {
+            Text = "* " .. text,
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0, 6, 0, 20 + bound_addition),
+            Theme = "Disabled Text",
+            ZIndex = 129
+        }).TextBounds.Y;
+    end
+
+    for _, text in next, options.removed do
+        bound_addition += change_log:Create("Text", {
+            Text = "- " .. text,
+            Font = self.font,
+            Size = self.font_size,
+            Position = newUDim2(0, 6, 0, 20 + bound_addition),
+            Color = newColor3(1, 0.258823, 0.258823),
+            ZIndex = 129
+        }).TextBounds.Y;
+    end
+
+    change_log.Size = newUDim2(1, 0, 0, bound_addition + 26);
+
+    local textbounds = utility.text_length(options.description, self.font, self.font_size);
+
+    local description_text = holder:Create("Text", {
+        Text = options.description,
+        Font = self.font,
+        Size = self.font_size,
+        Position = newUDim2(0.5, -textbounds.X * 0.5, 0, 2.5),
+        Theme = "Text",
+        ZIndex = 126
+    });
+
+    local slider = holder:Create("Square", {
+        Size = newUDim2(1, 0, 0, 10),
+        Position = newUDim2(0, 0, 0, 25),
+        ZIndex = 126,
+        Theme = "Object Background",
+        OutlineTheme = "Object Border"
+    });
+
+    local fill = slider:Create("Square", {
+        Size = newUDim2(options.percentage * 0.01, 0, 1, 0),
+        ZIndex = 127,
+        Ignored = true,
+        Theme = "Accent",
+        Outline = false
+    });
+
+    fill:Create("Image", {
+        Size = newUDim2(1, 0, 1, 0),
+        Transparency = 0.5,
+        ZIndex = 128,
+        Data = decode("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABuSURBVChTxY9BDoAgDASLGD2ReOYNPsR/+BAfroI7hibe9OYmky2wbUPIOdsXdc1f9WMwppQm+SDGBnUvomAQBH49qzhFEag25869ElzaIXDhD4JGbyoEVxUedN8FKwnfmwhucgKICc+pNB1mZhdCdhsa2ky0FAAAAABJRU5ErkJggg==")
     })
 
-    local sizeX = 310
-    local sizeY = 123
+    local load = holder:Create("Square", {
+        Position = newUDim2(0, 0, 0, 42),
+        Size = newUDim2(0.5, -4, 0, 20),
+        ZIndex = 126,
+        Theme = "Object Background",
+        OutlineTheme = "Object Border"
+    });
 
-    local function createWindow(height)
-        local window = Render:Create("Square", {
-            Size = newUDim2(0, sizeX, 0, 22),
-            Position = utility.center(sizeX, height),
-            ZIndex = 140,
-            Visible = true
-        })
+    utility.auto_button_color(load, "Object Background", fromRGB(3, 3, 3), fromRGB(8, 8, 8))
 
-        window:Create("Text", {
-            Text = options.title,
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0, 6, 0, 4),
-            Theme = "Text",
-            ZIndex = 141
-        })
+    load:Create("Text", {
+        Text = "Load",
+        Font = self.font,
+        Size = self.font_size,
+        Position = newUDim2(0.5, 0, 0, 3),
+        Theme = "Text",
+        Center = true,
+        ZIndex = 127
+    });
 
-        local main = window:Create("Square", {
-            Size = newUDim2(1, 0, 0, height),
-            ZIndex = 139,
-            Theme = "Window Background"
-        })
+    local close = holder:Create("Square", {
+        Position = newUDim2(0.5, 4, 0, 42),
+        Size = newUDim2(0.5, -4, 0, 20),
+        ZIndex = 126,
+        Theme = "Object Background",
+        OutlineTheme = "Object Border"
+    });
 
-        main:Create("Square", {
-            Size = newUDim2(1, 2, 1, 2),
-            Position = newUDim2(0, -1, 0, -1),
-            Theme = "Window Border",
-            ZIndex = 138,
-            OutlineTheme = "Black Border"
-        })
+    utility.auto_button_color(close, "Object Background", fromRGB(3, 3, 3), fromRGB(8, 8, 8))
 
-        return window, main
+    close:Create("Text", {
+        Text = "Close",
+        Font = self.font,
+        Size = self.font_size,
+        Position = newUDim2(0.5, 0, 0, 3),
+        Theme = "Text",
+        Center = true,
+        ZIndex = 127
+    });
+
+    local changelog = holder:Create("Square", {
+        Position = newUDim2(0, 0, 0, 69),
+        Size = newUDim2(1, 0, 0, 20),
+        ZIndex = 126,
+        Theme = "Object Background",
+        OutlineTheme = "Object Border"
+    });
+
+    utility.auto_button_color(changelog, "Object Background", fromRGB(3, 3, 3), fromRGB(8, 8, 8))
+
+    changelog:Create("Text", {
+        Text = "Changelog",
+        Font = self.font,
+        Size = self.font_size,
+        Position = newUDim2(0.5, 0, 0, 3),
+        Theme = "Text",
+        Center = true,
+        ZIndex = 127
+    });
+
+    local function resize()
+        main.Size = newUDim2(1, 0, 0, sizeY + (change_log.Visible and 34 + bound_addition or 0));
+        window.Position = utility.center(window.AbsoluteSize.X, main.AbsoluteSize.Y);
     end
 
-    local loader_types = {}
-    local window, main
+    load.MouseButton1Click:Connect(options.callback);
 
-    local function buildRealLoader()
-        window:Destroy()
-        window, main = createWindow(sizeY)
+    changelog.MouseButton1Click:Connect(function()
+        change_log.Visible = not change_log.Visible;
+        resize();
+    end);
 
-        local holder = main:Create("Square", {
-            Size = newUDim2(1, -12, 1, -34),
-            Position = newUDim2(0, 6, 0, 28),
-            Transparency = 0
-        })
+    resize();
 
-        local desc = holder:Create("Text", {
-            Text = options.description,
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0.5, 0, 0, 2),
-            Center = true,
-            Theme = "Text",
-            ZIndex = 143
-        })
+    local loader_types = {};
 
-        local slider = holder:Create("Square", {
-            Size = newUDim2(1, 0, 0, 10),
-            Position = newUDim2(0, 0, 0, 25),
-            Theme = "Object Background",
-            OutlineTheme = "Object Border"
-        })
+    function loader_types:Set(description, percentage)
+        local textbounds = utility.text_length(description, library.font, library.font_size);
+        description_text.Text = description;
+        description_text.Position = newUDim2(0.5, -textbounds.X * 0.5, 0, 2.5);
 
-        local fill = slider:Create("Square", {
-            Size = newUDim2(0, 0, 1, 0),
-            Theme = "Accent"
-        })
-
-        local load = holder:Create("Square", {
-            Position = newUDim2(0, 0, 0, 42),
-            Size = newUDim2(0.5, -4, 0, 20),
-            Theme = "Object Background",
-            OutlineTheme = "Object Border"
-        })
-
-        utility.auto_button_color(load, "Object Background", fromRGB(3,3,3), fromRGB(8,8,8))
-
-        load:Create("Text", {
-            Text = "Load",
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0.5, 0, 0, 3),
-            Center = true,
-            Theme = "Text"
-        })
-
-        local close = holder:Create("Square", {
-            Position = newUDim2(0.5, 4, 0, 42),
-            Size = newUDim2(0.5, -4, 0, 20),
-            Theme = "Object Background",
-            OutlineTheme = "Object Border"
-        })
-
-        utility.auto_button_color(close, "Object Background", fromRGB(3,3,3), fromRGB(8,8,8))
-
-        close:Create("Text", {
-            Text = "Close",
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0.5, 0, 0, 3),
-            Center = true,
-            Theme = "Text"
-        })
-
-        function loader_types:Set(text, percent)
-            desc.Text = text
-            fill.Size = newUDim2(percent * 0.01, 0, 1, 0)
-        end
-
-        function loader_types:Close()
-            window:Destroy()
-        end
-
-        load.MouseButton1Click:Connect(options.callback)
-        close.MouseButton1Click:Connect(function()
-            loader_types:Close()
-        end)
+        fill.Size = newUDim2(percentage * 0.01, 0, 1, 0);
     end
 
-    if options.keySystem then
-        window, main = createWindow(120)
-
-        local holder = main:Create("Square", {
-            Size = newUDim2(1, -12, 1, -34),
-            Position = newUDim2(0, 6, 0, 28)
-        })
-
-        holder:Create("Text", {
-            Text = "Enter Key",
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0.5, 0, 0, 2),
-            Center = true,
-            Theme = "Text"
-        })
-
-        local box = holder:Create("TextBox", {
-            Text = "",
-            PlaceholderText = "Enter key here...",
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0, 0, 0, 22),
-            Size = newUDim2(1, 0, 0, 20),
-            Theme = "Text"
-        })
-
-        local submit = holder:Create("Square", {
-            Position = newUDim2(0, 0, 0, 50),
-            Size = newUDim2(1, 0, 0, 20),
-            Theme = "Object Background",
-            OutlineTheme = "Object Border"
-        })
-
-        utility.auto_button_color(submit, "Object Background", fromRGB(3,3,3), fromRGB(8,8,8))
-
-        submit:Create("Text", {
-            Text = "Submit",
-            Font = self.font,
-            Size = self.font_size,
-            Position = newUDim2(0.5, 0, 0, 3),
-            Center = true,
-            Theme = "Text"
-        })
-
-        submit.MouseButton1Click:Connect(function()
-            if options.keyCallback(box.Text) ~= false then
-                buildRealLoader()
-            end
-        end)
-
-    else
-        window, main = createWindow(sizeY)
-        buildRealLoader()
+    function loader_types:Close()
+        window:Destroy();
     end
 
-    return loader_types
+    close.MouseButton1Click:Connect(function()
+        loader_types:Close();
+    end);
+
+    utility.format(loader_types, true);
+    return loader_types;
 end
 
 local left = library.notification_x == "left"
